@@ -57,10 +57,17 @@ def generate_record(schema):
                     )
                 )
         else:
-            alphabet = digits + ascii_lowercase
+            if col.get('name') == 'student_number':
+                alphabet = digits
+                length = col.get('length')
+                pre = ''
+            elif col.get('name') == 'account_name':
+                alphabet = ascii_lowercase
+                length = col.get('length') - 2
+                pre = choice(['c1', 'c2', 'g1', 'g2', 't1', 't2'])
             record.append(
-                ''.join(
-                    choice(alphabet) for _ in range(col.get('length'))
+                pre + ''.join(
+                    choice(alphabet) for _ in range(length)
                 )
             )
     print 'creating record: {}'.format(','.join(record))
