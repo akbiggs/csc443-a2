@@ -1,5 +1,5 @@
 CC = g++
-CCFLAGS = -O3 -Wall -g -v
+CCFLAGS = -O3 -Wall -g
 LEVELDB_DIR = ./leveldb-1.15.0
 LEVELDB_OPTS = -I $(LEVELDB_DIR)/include -pthread $(LEVELDB_DIR)/libleveldb.a
 
