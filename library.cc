@@ -54,8 +54,6 @@ void mk_runs(FILE *in_fp, FILE *out_fp, long run_length, Schema *schema) {
     int total_records_in_run = 0;
     int page_max_record_count = 8;
     int last_page_record_count = 0;
-    // Unsure how to use Schema but it's the sum of those. Hard coding for now with shitty value.
-    int record_size = 1000;
 
     do {
         memset(buffer_memory, 0, page_size * num_buffer_pages);
@@ -80,7 +78,7 @@ void mk_runs(FILE *in_fp, FILE *out_fp, long run_length, Schema *schema) {
 
         // In-memory sort
         total_records_in_run = ((run_page_count - 1) * page_max_record_count) + last_page_record_count;
-        qsort(buffer_memory, total_records_in_run, record_size, record_comparator);
+        qsort(buffer_memory, total_records_in_run, schema->record_size, record_comparator);
 
         // Write all but the last page back in full page sizes.
         for (int j = 0; j < run_page_count - 1; j++){
@@ -91,7 +89,7 @@ void mk_runs(FILE *in_fp, FILE *out_fp, long run_length, Schema *schema) {
 
         // Write the last potentially not full page.
         current_page = &buffer_memory[(run_page_count - 1) * page_size];
-        fwrite(current_page, last_page_record_count * record_size, 1, out_fp);
+        fwrite(current_page, last_page_record_count * schema->record_size, 1, out_fp);
         fflush(out_fp);
     } while (last_page_record_count < page_max_record_count);
     free(buffer_memory);
