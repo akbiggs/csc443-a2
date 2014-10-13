@@ -18,11 +18,11 @@ int read_schema(const char* schema_file, Schema* schema) {
         attribute->name = new char[255];
         strncpy(attribute->name, json_attribute.get("name", "").asCString(), 255);
 
+        attribute->type = new char[10];
         if (json_attribute.isMember("type")) {
-            attribute->type = new char[255];
-            strncpy(attribute->type, json_attribute.get("type", "").asCString(), 255);
+            strncpy(attribute->type, json_attribute.get("type", "").asCString(), 10);
         } else {
-            attribute->type = "string";
+            strncpy(attribute->type, "string", 7);
         }
 
         attribute->length = json_attribute.get("length", -1).asInt();
