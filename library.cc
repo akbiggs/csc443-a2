@@ -66,7 +66,6 @@ void mk_runs(FILE *in_fp, FILE *out_fp, long run_length, Schema *schema) {
             current_page = &buffer_memory[j * page_size];
             fread(current_page, page_size, 1, in_fp);
             // Convert page in to some kind of Record
-            // Records_from page which end up in the Records array;
             run_page_count++;
             // If this happens we don't want to fill up any more buffer pages but just use what we have.
             last_page_record_count = total_records_in_page(current_page);
@@ -79,7 +78,7 @@ void mk_runs(FILE *in_fp, FILE *out_fp, long run_length, Schema *schema) {
 
         // In-memory sort
         total_records_in_run = ((run_page_count - 1) * page_max_record_count) + last_page_record_count;
-        qsort(Records, total_records_in_run, record_size, record_comparator);
+        qsort(buffer_memory, total_records_in_run, record_size, record_comparator);
 
         // Write all but the last page back in full page sizes.
         for (int j = 0; j < run_page_count - 1; j++){
