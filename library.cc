@@ -1,5 +1,20 @@
 #include "library.h"
 
+size_t sizeof_attr(Attribute* attr) {
+    int length = attr->length;
+    if (!strcmp(attr->type, "string")) {
+        // length bytes + 1 for the termination char
+        return length + 1;
+    } else if (!strcmp(attr->type, "integer")) {
+        return sizeof(int);
+    } else if (!strcmp(attr->type, "float")) {
+        return sizeof(float);
+    } 
+
+    fprintf(stderr, "Could not get size of attribute type %s\n", attr->type);
+    return 0;
+}
+
 int read_schema(const char* schema_file, Schema* schema) {
     Json::Value root;
     Json::Reader reader;
@@ -10,6 +25,7 @@ int read_schema(const char* schema_file, Schema* schema) {
     }
 
     schema->nattrs = root.size();
+    schema->record_size = 0;
     schema->attrs = new Attribute *[schema->nattrs];
     for (unsigned int i = 0; i < root.size(); i++) {
         Attribute *attribute = (Attribute *) malloc(sizeof(Attribute));
@@ -28,6 +44,7 @@ int read_schema(const char* schema_file, Schema* schema) {
         attribute->length = json_attribute.get("length", -1).asInt();
 
         schema->attrs[i] = attribute;
+        schema->record_size += sizeof_attr(attribute);
     }
 
     return 0;
