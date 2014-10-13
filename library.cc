@@ -6,8 +6,6 @@ int read_schema(std::string schema_file, Schema *schema) {
 
     std::ifstream file_contents(schema_file);
     if (!reader.parse(file_contents, root, false)) {
-        std::cout << "Json error: ";
-        std::cout << reader.getFormatedErrorMessages() << std::endl;
         return -1;
     }
 
@@ -20,8 +18,12 @@ int read_schema(std::string schema_file, Schema *schema) {
         attribute->name = new char[255];
         strncpy(attribute->name, json_attribute.get("name", "").asCString(), 255);
 
-        attribute->type = new char[255];
-        strncpy(attribute->type, json_attribute.get("type", "").asCString(), 255);
+        if (json_attribute.isMember("type")) {
+            attribute->type = new char[255];
+            strncpy(attribute->type, json_attribute.get("type", "").asCString(), 255);
+        } else {
+            attribute->type = "string";
+        }
 
         attribute->length = json_attribute.get("length", -1).asInt();
 

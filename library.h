@@ -3,15 +3,6 @@
 #include <fstream>
 
 /**
-* Represents the distribution of an integer field.
-*/
-typedef struct {
-    char *name;
-    int min;
-    int max;
-} Distribution;
-
-/**
 * An attribute schema. You should probably modify
 * this to add your own fields.
 */
@@ -19,7 +10,9 @@ typedef struct {
     char *name;
     char *type;
     int length;
-    Distribution *distribution;
+    // don't need to process the distribution since
+    // it's only required for the python data generation
+    // script
 } Attribute;
 
 /**
