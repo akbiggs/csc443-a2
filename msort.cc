@@ -31,7 +31,7 @@ int main(int argc, const char* argv[]) {
   // Print out the schema
   string attr_name;
   int attr_len;
-  for (int i = 0; i < schema.size(); ++i) {
+  for (unsigned int i = 0; i < schema.size(); ++i) {
     attr_name = schema[i].get("name", "UTF-8" ).asString();
     attr_len = schema[i].get("length", "UTF-8").asInt();
     cout << "{name : " << attr_name << ", length : " << attr_len << "}" << endl;

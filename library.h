@@ -17,6 +17,8 @@ typedef struct {
     // script
 } Attribute;
 
+size_t sizeof_attr(Attribute* attr);
+
 /**
 * A record schema contains an array of attribute
 * schema `attrs`, as well as an array of sort-by
@@ -28,6 +30,8 @@ typedef struct {
     int nattrs;
     int *sort_attrs;
     int n_sort_attrs;
+
+    size_t record_size;
 } Schema;
 
 int read_schema(const char* schema_file, Schema *schema);

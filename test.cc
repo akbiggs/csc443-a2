@@ -38,6 +38,15 @@ TEST(ReadSchema) {
     free(schema);
 }
 
+TEST(SizeOfRecord) {
+    Schema* schema = (Schema*) malloc(sizeof(Schema));
+    test_open_schema("schema_example.json", schema);
+
+    CHECK_EQUAL(schema->record_size, 19 + sizeof(int) + sizeof(float));
+
+    free(schema);
+}
+
 int main() {
     return UnitTest::RunAllTests();
 }
