@@ -19,7 +19,7 @@ TEST(ReadSchema) {
 
     CHECK_EQUAL(4, schema->nattrs);
 
-    CHECK_EQUAL("ttudent_number", schema->attrs[0]->name);
+    CHECK_EQUAL("student_number", schema->attrs[0]->name);
     CHECK_EQUAL(9, schema->attrs[0]->length);
     CHECK_EQUAL("string", schema->attrs[0]->type);
 
