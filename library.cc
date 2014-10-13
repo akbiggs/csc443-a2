@@ -40,19 +40,23 @@ int record_comparator(const void* a, const void* b){
     return strcmp((const char *)a, (const char *)b);
 }
 
+int total_records_in_page(char* page, Schema *schema) {
+    return 28; // TODO: fill this in.
+}
+
 void mk_runs(FILE *in_fp, FILE *out_fp, long run_length, Schema *schema) {
     fseek(in_fp, 0, SEEK_SET);
     fseek(out_fp, 0, SEEK_SET);
 
     // Unsure what to use so lets use some defaults for now
     int page_size = 8001;
+    int page_max_record_count = floor(page_size/schema->record_size);
     int num_buffer_pages = (run_length/page_size) + 1; // Minimum for merge sort
     char* buffer_memory = (char*)malloc(page_size * num_buffer_pages);
 
     char* current_page;
     int run_page_count = 0;
     int total_records_in_run = 0;
-    int page_max_record_count = 8;
     int last_page_record_count = 0;
 
     do {
@@ -68,7 +72,7 @@ void mk_runs(FILE *in_fp, FILE *out_fp, long run_length, Schema *schema) {
             // Convert page in to some kind of Record
             run_page_count++;
             // If this happens we don't want to fill up any more buffer pages but just use what we have.
-            last_page_record_count = total_records_in_page(current_page);
+            last_page_record_count = total_records_in_page(current_page, schema);
             if (last_page_record_count < page_max_record_count) {
                 break;
             }
@@ -83,7 +87,7 @@ void mk_runs(FILE *in_fp, FILE *out_fp, long run_length, Schema *schema) {
         // Write all but the last page back in full page sizes.
         for (int j = 0; j < run_page_count - 1; j++){
             current_page = &buffer_memory[j * page_size];
-            fwrite(rurrent_page, page_size, 1, out_fp);
+            fwrite(current_page, page_size, 1, out_fp);
             fflush(out_fp);
         }
 
