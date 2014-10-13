@@ -1,6 +1,6 @@
 #include "library.h"
 
-int read_schema(std::string schema_file, Schema *schema) {
+int read_schema(const char* schema_file, Schema* schema) {
     Json::Value root;
     Json::Reader reader;
 
@@ -11,7 +11,7 @@ int read_schema(std::string schema_file, Schema *schema) {
 
     schema->nattrs = root.size();
     schema->attrs = new Attribute *[schema->nattrs];
-    for (int i = 0; i < root.size(); i++) {
+    for (unsigned int i = 0; i < root.size(); i++) {
         Attribute *attribute = (Attribute *) malloc(sizeof(Attribute));
         Json::Value json_attribute = root.get(i, "");
 

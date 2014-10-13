@@ -1,7 +1,8 @@
-#include "json/json.h"
 #include <iostream>
 #include <fstream>
+#include <string.h>
 
+#include "json/json.h"
 /**
 * An attribute schema. You should probably modify
 * this to add your own fields.
