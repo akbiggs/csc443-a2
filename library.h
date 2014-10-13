@@ -1,6 +1,7 @@
 #include "json/json.h"
 #include <iostream>
 #include <fstream>
+#include <math.h>
 
 /**
 * Represents the distribution of an integer field.
