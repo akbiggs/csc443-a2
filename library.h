@@ -8,8 +8,8 @@
 * this to add your own fields.
 */
 typedef struct {
-    char *name;
-    char *type;
+    char* name;
+    char* type;
     int length;
     // don't need to process the distribution since
     // it's only required for the python data generation
@@ -29,7 +29,7 @@ typedef struct {
     int n_sort_attrs;
 } Schema;
 
-int read_schema(std::string schema_file, Schema *schema);
+int read_schema(const char* schema_file, Schema *schema);
 
 /**
 * A record can defined as a struct with a pointer

@@ -5,7 +5,7 @@
 
 using namespace UnitTest;
 
-void test_open_schema(char* filename, Schema* schema) {
+void test_open_schema(const char* filename, Schema* schema) {
     if (read_schema(filename, schema)) {
         printf("Could not read schema from %s\n", filename);
         free(schema);
