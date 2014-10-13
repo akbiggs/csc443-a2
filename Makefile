@@ -12,6 +12,9 @@ library.o: library.cc library.h
 jsoncpp.o: jsoncpp.cpp json/json.h
 	$(CC) -o $@ -c $< $(CCFLAGS) $(JSONCPP_OPTS)
 
+test_sort: test_sort.cc library.o jsoncpp.o
+	$(CC) -o $@ $^ $(CCFLAGS)
+
 msort: msort.cc library.o jsoncpp.o
 	$(CC) -o $@ $^ $(CCFLAGS)
 
