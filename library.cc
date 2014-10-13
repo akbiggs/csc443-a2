@@ -41,7 +41,7 @@ int read_schema(const char* schema_file, Schema* schema) {
             strncpy(attribute->type, "string", 7);
         }
 
-        attribute->length = json_attribute.get("length", -1).asInt();
+        attribute->length = json_attribute.get("length", 0).asInt();
 
         schema->attrs[i] = attribute;
         schema->record_size += sizeof_attr(attribute);
