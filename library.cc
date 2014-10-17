@@ -44,7 +44,7 @@ static Schema* comparatorSchema;
 int offset_to_attribute(Schema *schema, int attr) {
     int offset = 0;
     for (int i = 0; i < schema->nattrs; i++) {
-        offset += 1 + schema->attrs[i]->length;
+        offset += 1 + sizeof_attr(schema->attrs[i]);
     }
     return offset;
 }
