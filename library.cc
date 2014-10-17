@@ -67,7 +67,7 @@ int record_comparator(const void* a, const void* b){
     for (int i = 0; i < comparatorSchema->nsort_attrs; i++) {
         attr = comparatorSchema->sort_attrs[i];
         offset = offset_to_attribute(comparatorSchema, attr);
-        return_val = strcmp((const char *)a +  offset, (const char *)b + offset);
+        return_val = strncmp((const char *)a +  offset, (const char *)b + offset, attr->length);
         if (return_val != 0) {
             break;
         }
