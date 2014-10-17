@@ -1,18 +1,7 @@
 #include "library.h"
 
 size_t sizeof_attr(Attribute* attr) {
-    int length = attr->length;
-    if (!strcmp(attr->type, "string")) {
-        // length bytes + 1 for the termination char
-        return length + 1;
-    } else if (!strcmp(attr->type, "integer")) {
-        return sizeof(int);
-    } else if (!strcmp(attr->type, "float")) {
-        return sizeof(float);
-    }
-
-    fprintf(stderr, "Could not get size of attribute type %s\n", attr->type);
-    return 0;
+    return attr->length;
 }
 
 int read_schema(const char* schema_file, Schema* schema) {
@@ -92,17 +81,19 @@ void mk_runs(FILE *in_fp, FILE *out_fp, long run_length, Schema *schema) {
     fseek(in_fp, 0, SEEK_SET);
     fseek(out_fp, 0, SEEK_SET);
 
-    // Unsure what to use so lets use some defaults for now
-    char* buffer_memory = (char*)malloc(schema->record_size * run_length);
+    size_t buffer_size = schema->record_size * run_length;
+    char* buffer_memory = (char*)malloc(buffer_size);
     long run_record_count = 0;
 
     comparatorSchema = schema;
 
     do {
         // Zero out so we can check the number of tecords.
-        memset(buffer_memory, '\0', (schema->record_size * run_length));
+        memset(buffer_memory, '\0', buffer_size);
+
         // Read in as much as possible till.
         fread(buffer_memory, schema->record_size, run_length, in_fp);
+
         // If this ends up being less that page size....we don't want to fill
         // up any more buffer pages but just use what we have.
         run_record_count = total_records_in_page(buffer_memory, schema, run_length);
@@ -116,6 +107,7 @@ void mk_runs(FILE *in_fp, FILE *out_fp, long run_length, Schema *schema) {
         fwrite(buffer_memory, schema->record_size, run_record_count, out_fp);
         fflush(out_fp);
     } while (run_record_count < run_length);
+
     free(buffer_memory);
 }
 
