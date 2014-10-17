@@ -55,6 +55,7 @@ void mk_runs(FILE *in_fp, FILE *out_fp, long run_length, Schema *schema);
 * you can add additional members as your wish
 */
 class RunIterator {
+public:
     /**
     * Creates an interator using the `buf_size` to
     * scan through a run that starts at `start_pos`
@@ -78,6 +79,13 @@ class RunIterator {
     * of the run
     */
     bool has_next();
+
+private:
+    FILE* fp;
+    long current_pos;
+    long end_pos;
+    long buf_size;
+    Schema *schema;
 };
 
 /**

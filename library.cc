@@ -113,6 +113,44 @@ void mk_runs(FILE *in_fp, FILE *out_fp, long run_length, Schema *schema) {
     free(buffer_memory);
 }
 
+/** RUN ITERATOR **/
+
+RunIterator::RunIterator(FILE* fp, long start_pos, long run_length, long buf_size,
+        Schema* schema) {
+    this->fp = fp;
+    fseek(this->fp, start_pos, SEEK_SET);
+
+    this->current_pos = start_pos;
+    this->end_pos = start_pos + run_length * schema->record_size;
+    this->buf_size = buf_size;
+    this->schema = schema;
+}
+
+RunIterator::~RunIterator() {
+    fclose(this->fp);
+    free(schema);
+}
+
+Record* RunIterator::next() {
+    Record* record = (Record*)malloc(sizeof(Record));
+    char record_data[this->schema->record_size];
+
+    fread(record_data, this->schema->record_size, 1, this->fp);
+
+    record->data = record_data;
+    record->schema = schema;
+
+    this->current_pos += this->schema->record_size;
+
+    return record;
+
+}
+
+bool RunIterator::has_next() {
+    return this->current_pos < this->end_pos;
+}
+
+/** MERGE RUNS **/
 void merge_runs(RunIterator *iterators[], int num_runs, FILE *out_fp,
     long start_pos, char *buf, long buf_size) {
     // Your implementation
