@@ -41,7 +41,7 @@ int read_schema(const char* schema_file, Schema* schema) {
 
 int offset_to_attribute(Schema *schema, int attr) {
     int offset = 0;
-    for (int i = 0; i < schema->nattrs; i++) {
+    for (int i = 0; i < attr; i++) {
         offset += 1 + sizeof_attr(schema->attrs[i]);
     }
     return offset;
@@ -51,8 +51,8 @@ int record_comparator(const void* a, const void* b){
     int return_val = 0;
     int attr;
     int offset;
-    Record* r1 = (Record *)a;
-    Record* r2 = (Record *)b;
+    Record* r1 = *((Record **)a);
+    Record* r2 = *((Record **)b);
     for (int i = 0; i < r1->schema->n_sort_attrs; i++) {
         attr = r1->schema->sort_attrs[i];
         offset = offset_to_attribute(r1->schema, attr);
@@ -79,22 +79,28 @@ void mk_runs(FILE *in_fp, FILE *out_fp, long run_length, Schema *schema) {
         memset(buffer_memory, '\0', buffer_size);
 
         // Read in as much as possible till.
-        fread(buffer_memory, schema->record_size, run_length, in_fp);
+        if (fread(buffer_memory, schema->record_size + schema->nattrs, run_length, in_fp) == 0) {
+            break;
+        }
+        //printf("buffer is: %.58s\n\n",buffer_memory);
 
         // I'm reading them in, they better be null terminated...
         for (int j = 0; j < run_length; j++) {
             Record* record = (Record*)malloc(sizeof(Record));
-            record->data = buffer_memory+ (schema->record_size * j);
+            record->data = buffer_memory+ (schema->record_size + schema->nattrs) * j;
             if (record->data[0] == '\0') {
                 break;
             }
             record->schema = schema;
             records[j] = record;
             run_record_count++;
+            //printf("%s\n", record->data);
+            //printf("%s\n", records[j]->data);
+            //printf("record size is %ld\n", schema->record_size);
         }
 
         // In-memory sort
-        qsort(records, run_record_count, schema->record_size, record_comparator);
+        qsort(records, run_record_count, sizeof(Record*), record_comparator);
 
         // Write back sorted data.
         fwrite(buffer_memory, schema->record_size, run_record_count, out_fp);
