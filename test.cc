@@ -48,18 +48,31 @@ TEST(SizeOfRecord) {
     free(schema);
 }
 
+TEST(AttributeOffset) {
+    Schema* schema = (Schema*) malloc(sizeof(Schema));
+    test_open_schema("test_files/schema_example.json", schema);
+
+    CHECK_EQUAL(offset_to_attribute(schema, 0), 0);
+    CHECK_EQUAL(offset_to_attribute(schema, 1), 10);
+    CHECK_EQUAL(offset_to_attribute(schema, 2), 19);
+    CHECK_EQUAL(offset_to_attribute(schema, 3), 24);
+
+    free(schema);
+}
+
 TEST(MakeRuns) {
     FILE* in = fopen("test_files/test_data.csv", "r");
     FILE* out = fopen("test_files/out.csv", "w");
     
-    int run_length = 3;
+    int run_length = 10;
 
     Schema* schema = (Schema*)malloc(sizeof(Schema));
     test_open_schema("test_files/schema_example.json", schema);
 
-    schema->n_sort_attrs = 1;
-    schema->sort_attrs = (int*)malloc(sizeof(int));
+    schema->n_sort_attrs = 2;
+    schema->sort_attrs = (int*)malloc(sizeof(int)*2);
     schema->sort_attrs[0] = 3;
+    schema->sort_attrs[1] = 2;
 
     mk_runs(in, out, run_length, schema);
 
@@ -71,6 +84,7 @@ TEST(MakeRuns) {
 
     int num_lines = 0;
     float cgpas[run_length];
+    int start_years[run_length];
 
     while (fgets(line, line_length, out)) {
 
@@ -78,11 +92,18 @@ TEST(MakeRuns) {
         if (num_lines % run_length == 0 && num_lines != 0) {
             for (int i = 0; i < run_length - 1; i++) {
                 CHECK(cgpas[i] <= cgpas[i + 1]);
+
+                if (cgpas[i] == cgpas[i + 1]) {
+                    CHECK(start_years[i] <= start_years[i + 1]);
+                }
             }
         }
 
-        float cgpa = atof(line + 24);
+        float cgpa = atof(line + offset_to_attribute(schema, 3));
+        int start_year = atoi(line + offset_to_attribute(schema, 2));
+
         cgpas[num_lines % run_length] = cgpa;
+        start_years[num_lines % run_length] = start_year;
 
         num_lines++;
     }
