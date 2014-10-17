@@ -84,6 +84,7 @@ void mk_runs(FILE *in_fp, FILE *out_fp, long run_length, Schema *schema) {
     size_t buffer_size = schema->record_size * run_length;
     char* buffer_memory = (char*)malloc(buffer_size);
     long run_record_count = 0;
+    Record records[run_length];
 
     comparatorSchema = schema;
 
@@ -99,6 +100,9 @@ void mk_runs(FILE *in_fp, FILE *out_fp, long run_length, Schema *schema) {
         run_record_count = total_records_in_page(buffer_memory, schema, run_length);
 
         // I'm reading them in, they better be null terminated...
+        for (int j = 0; j < run_record_count; j++) {
+            // Create record using data + schema then we don't need static scheme anymore....
+        }
 
         // In-memory sort
         qsort(buffer_memory, run_record_count, schema->record_size, record_comparator);
