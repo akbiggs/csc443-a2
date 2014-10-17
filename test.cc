@@ -64,7 +64,7 @@ TEST(MakeRuns) {
     mk_runs(in, out, run_length, schema);
 
     fclose(out);
-    out = fopen("test_out.csv", "r");
+    out = fopen("test_files/out.csv", "r");
     
     size_t line_length = schema->record_size + 1;
     char* line = (char*) malloc(line_length);
@@ -73,14 +73,16 @@ TEST(MakeRuns) {
     float cgpas[run_length];
 
     while (fgets(line, line_length, out)) {
-        float cgpa = atof(line + 24);
-        cgpas[num_lines % run_length] = cgpa;
 
+        // check once we've made a run that the values are properly sorted
         if (num_lines % run_length == 0 && num_lines != 0) {
             for (int i = 0; i < run_length - 1; i++) {
                 CHECK(cgpas[i] <= cgpas[i + 1]);
             }
         }
+
+        float cgpa = atof(line + 24);
+        cgpas[num_lines % run_length] = cgpa;
 
         num_lines++;
     }

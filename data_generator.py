@@ -59,7 +59,6 @@ def generate_record(schema):
         if record_data:
             record.append(record_data)
 
-    print 'creating record: {}'.format(','.join(record))
     return record
 
 
@@ -71,6 +70,5 @@ if __name__ == '__main__':
     schema = load(open(argv[1]))
     output = argv[2]
     nrecords = int(argv[3])
-    print schema
 
     generate_data(schema, output, nrecords)
