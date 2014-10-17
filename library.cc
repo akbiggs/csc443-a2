@@ -118,3 +118,21 @@ void merge_runs(RunIterator *iterators[], int num_runs, FILE *out_fp,
     // Your implementation
 }
 
+
+
+RunIterator::RunIterator(FILE *fp, long start_pos, long run_length, long buf_size,
+        Schema *schema){
+    
+}
+
+Record* RunIterator::next(){
+    return 0;
+}
+
+bool RunIterator::has_next(){
+    return false;
+}
+
+RunIterator::~RunIterator(){
+    
+}
