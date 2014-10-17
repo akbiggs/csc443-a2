@@ -71,10 +71,10 @@ TEST(MakeRuns) {
     char* line = (char*) malloc(line_length);
 
     int num_lines = 0;
-    int first_cgpa = 0;
-    int second_cgpa = 0;
+    float first_cgpa = 0;
+    float second_cgpa = 0;
     while (fgets(line, line_length, out)) {
-        int cgpa = atoi(line + 26);
+        float cgpa = atof(line + 24);
 
         if (num_lines % 2 == 0) {
             if (num_lines != 0) {
