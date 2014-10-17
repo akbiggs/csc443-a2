@@ -42,7 +42,7 @@ TEST(SizeOfRecord) {
     Schema* schema = (Schema*) malloc(sizeof(Schema));
     test_open_schema("schema_example.json", schema);
 
-    CHECK_EQUAL(schema->record_size, 19 + sizeof(int) + sizeof(float));
+    CHECK_EQUAL(schema->record_size, 25);
 
     free(schema);
 }

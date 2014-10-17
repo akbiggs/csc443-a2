@@ -50,13 +50,13 @@ int offset_to_attribute(Schema *schema, int attr) {
 }
 
 int record_comparator(const void* a, const void* b){
-    int return_val;
+    int return_val = 0;
     int attr;
     int offset;
-    for (int i = 0; i < comparatorSchema->nsort_attrs; i++) {
+    for (int i = 0; i < comparatorSchema->n_sort_attrs; i++) {
         attr = comparatorSchema->sort_attrs[i];
         offset = offset_to_attribute(comparatorSchema, attr);
-        return_val = strncmp((const char *)a +  offset, (const char *)b + offset, attr->length);
+        return_val = strncmp((const char *)a +  offset, (const char *)b + offset, sizeof_attr(comparatorSchema->attrs[attr]));
         if (return_val != 0) {
             break;
         }
