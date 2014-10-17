@@ -4,7 +4,6 @@
 #include "test_lib/UnitTest++.h"
 #include "test_lib/ReportAssert.h"
 
-
 using namespace UnitTest;
 
 void test_open_schema(const char* filename, Schema* schema) {
@@ -17,7 +16,7 @@ void test_open_schema(const char* filename, Schema* schema) {
 
 TEST(ReadSchema) {
     Schema* schema = (Schema*) malloc(sizeof(Schema));
-    test_open_schema("schema_example.json", schema);
+    test_open_schema("test_files/schema_example.json", schema);
 
     CHECK_EQUAL(4, schema->nattrs);
 
@@ -42,7 +41,7 @@ TEST(ReadSchema) {
 
 TEST(SizeOfRecord) {
     Schema* schema = (Schema*) malloc(sizeof(Schema));
-    test_open_schema("schema_example.json", schema);
+    test_open_schema("test_files/schema_example.json", schema);
 
     CHECK_EQUAL(schema->record_size, 29LU);
 
@@ -50,13 +49,13 @@ TEST(SizeOfRecord) {
 }
 
 TEST(MakeRuns) {
-    FILE* in = fopen("mydata.csv", "r");
-    FILE* out = fopen("test_out.csv", "w");
+    FILE* in = fopen("test_files/test_data.csv", "r");
+    FILE* out = fopen("test_files/out.csv", "w");
     
-    int run_length = 2;
+    int run_length = 3;
 
     Schema* schema = (Schema*)malloc(sizeof(Schema));
-    test_open_schema("schema_example.json", schema);
+    test_open_schema("test_files/schema_example.json", schema);
 
     schema->n_sort_attrs = 1;
     schema->sort_attrs = (int*)malloc(sizeof(int));
@@ -71,19 +70,16 @@ TEST(MakeRuns) {
     char* line = (char*) malloc(line_length);
 
     int num_lines = 0;
-    float first_cgpa = 0;
-    float second_cgpa = 0;
+    float cgpas[run_length];
+
     while (fgets(line, line_length, out)) {
         float cgpa = atof(line + 24);
+        cgpas[num_lines % run_length] = cgpa;
 
-        if (num_lines % 2 == 0) {
-            if (num_lines != 0) {
-                CHECK(first_cgpa <= second_cgpa);
+        if (num_lines % run_length == 0 && num_lines != 0) {
+            for (int i = 0; i < run_length - 1; i++) {
+                CHECK(cgpas[i] <= cgpas[i + 1]);
             }
-
-            first_cgpa = cgpa;
-        } else {
-            second_cgpa = cgpa;
         }
 
         num_lines++;
