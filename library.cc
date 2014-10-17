@@ -50,11 +50,29 @@ int read_schema(const char* schema_file, Schema* schema) {
     return 0;
 }
 
+static Schema* comparatorSchema;
+
+int offset_to_attribute(Schema *schema, int attr) {
+    int offset = 0;
+    for (int i = 0; i < schema->nattrs; i++) {
+        offset += 1 + schema->attrs[i]->length;
+    }
+    return offset;
+}
+
 int record_comparator(const void* a, const void* b){
-    // Be warned. Be null terminated.
-    // This will not work since we only want to sort on a particular field. Unsure what to put here. palceholder.
-    // Something like strcomp(a->at()) or idk;
-    return strcmp((const char *)a, (const char *)b);
+    int return_val;
+    int attr;
+    int offset;
+    for (int i = 0; i < comparatorSchema->nsort_attrs; i++) {
+        attr = comparatorSchema->sort_attrs[i];
+        offset = offset_to_attribute(comparatorSchema, attr);
+        return_val = strncmp((const char *)a +  offset, (const char *)b + offset, attr->length);
+        if (return_val != 0) {
+            break;
+        }
+    }
+    return return_val;
 }
 
 long total_records_in_page(char* buffer_memory, Schema *schema, long run_length) {
@@ -77,6 +95,8 @@ void mk_runs(FILE *in_fp, FILE *out_fp, long run_length, Schema *schema) {
     // Unsure what to use so lets use some defaults for now
     char* buffer_memory = (char*)malloc(schema->record_size * run_length);
     long run_record_count = 0;
+
+    comparatorSchema = schema;
 
     do {
         // Zero out so we can check the number of tecords.
