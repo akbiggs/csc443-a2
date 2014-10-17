@@ -24,11 +24,10 @@ def generate_data(schema, out_file, nrecords):
     character at the end of every record.
     '''
     print "Generating {} records".format(nrecords)
-    with open(out_file, 'w') as records_file:
-        csv_writer = csv.writer(records_file)
+    with open(out_file, 'wb') as records_file:
         for i in range(nrecords):
-            csv_writer.writerow(generate_record(schema))
-
+            record = generate_record(schema)
+            records_file.write("{}\n".format(','.join(record)))
 
 def generate_record(schema):
     record = []
@@ -38,11 +37,13 @@ def generate_record(schema):
 
         record_data = None
         if distribution:
+
             value = None
             if distribution.get('name') == 'uniform':
                 value = int(uniform(distribution.get('min'), distribution.get('max')))
             elif distribution.get('name') == 'normal':
                 value = round(gauss(mu=distribution.get('mu'), sigma=distribution.get('sigma')), 2)
+
             if value:
                 if col.get('type') == 'integer':
                     record_data = str(value).zfill(length)

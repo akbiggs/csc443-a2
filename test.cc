@@ -89,7 +89,7 @@ TEST(MakeRuns) {
         num_lines++;
     }
 
-    CHECK_EQUAL(num_lines, 100);
+    CHECK_EQUAL(num_lines, 1000);
 
     fclose(out);
     fclose(in);
