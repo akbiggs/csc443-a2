@@ -4,16 +4,7 @@ from json import load
 from random import choice, uniform, gauss
 from string import ascii_lowercase, digits
 from sys import argv, exit
-
-
-'''
-You should implement this script to generate test data for your
-merge sort program.
-
-The schema definition should be separate from the data generation
-code. See example schema file `schema_example.json`.
-'''
-
+from decimal import Decimal
 
 def generate_data(schema, out_file, nrecords):
     '''
@@ -43,26 +34,30 @@ def generate_record(schema):
     record = []
     for col in schema:
         distribution = col.get('distribution')
+        length = col.get('length')
+
+        record_data = None
         if distribution:
+            value = None
             if distribution.get('name') == 'uniform':
-                record.append(
-                    str(
-                        int(uniform(distribution.get('min'), distribution.get('max')))
-                    )
-                )
+                value = int(uniform(distribution.get('min'), distribution.get('max')))
             elif distribution.get('name') == 'normal':
-                record.append(
-                    str(
-                        round(gauss(mu=distribution.get('mu'), sigma=distribution.get('sigma')), 2)
-                    )
-                )
+                value = round(gauss(mu=distribution.get('mu'), sigma=distribution.get('sigma')), 2)
+            if value:
+                if col.get('type') == 'integer':
+                    record_data = str(value).zfill(length)
+                else:
+                    digits_before_point = len(str(value).split(".")[0])
+                    format_str = "10." + "0" * (length - digits_before_point - 1)
+                    record_data = str(Decimal(value).quantize(Decimal(format_str)))
+
         else:
             alphabet = digits + ascii_lowercase
-            record.append(
-                ''.join(
-                    choice(alphabet) for _ in range(col.get('length'))
-                )
-            )
+            record_data = ''.join(choice(alphabet) for _ in range(length))
+        
+        if record_data:
+            record.append(record_data)
+
     print 'creating record: {}'.format(','.join(record))
     return record
 
