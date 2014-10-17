@@ -47,6 +47,27 @@ TEST(SizeOfRecord) {
     free(schema);
 }
 
+TEST(MakeRuns) {
+    FILE* in = fopen("data_example.csv", "r");
+    FILE* out = fopen("test_out.csv", "w");
+    
+    int run_length = 2;
+
+    Schema* schema = (Schema*)malloc(sizeof(Schema));
+    test_open_schema("schema_example.json", schema);
+
+    schema->n_sort_attrs = 1;
+    schema->sort_attrs = (int*)malloc(sizeof(int));
+    schema->sort_attrs[0] = 3;
+
+    mk_runs(in, out, run_length, schema);
+
+    fseek(out, 0, SEEK_SET);
+
+    fclose(out);
+    fclose(in);
+}
+
 int main() {
     return UnitTest::RunAllTests();
 }
