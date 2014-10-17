@@ -9,7 +9,7 @@ size_t sizeof_attr(Attribute* attr) {
         return sizeof(int);
     } else if (!strcmp(attr->type, "float")) {
         return sizeof(float);
-    } 
+    }
 
     fprintf(stderr, "Could not get size of attribute type %s\n", attr->type);
     return 0;
@@ -57,8 +57,17 @@ int record_comparator(const void* a, const void* b){
     return strcmp((const char *)a, (const char *)b);
 }
 
-int total_records_in_page(char* page, Schema *schema) {
-    return 28; // TODO: fill this in.
+long total_records_in_page(char* buffer_memory, Schema *schema, long run_length) {
+    char* record;
+    long record_count = 0;
+    for (long i = 0; i < run_length; i++){
+        record = &buffer_memory[i * schema->record_size];
+        if (record[0] == '\0'){
+            return record_count;
+        }
+        record_count++;
+    }
+    return record_count;
 }
 
 void mk_runs(FILE *in_fp, FILE *out_fp, long run_length, Schema *schema) {
@@ -66,53 +75,27 @@ void mk_runs(FILE *in_fp, FILE *out_fp, long run_length, Schema *schema) {
     fseek(out_fp, 0, SEEK_SET);
 
     // Unsure what to use so lets use some defaults for now
-    int page_size = 8001;
-    int page_max_record_count = floor(page_size/schema->record_size);
-    int num_buffer_pages = (run_length/page_size) + 1; // Minimum for merge sort
-    char* buffer_memory = (char*)malloc(page_size * num_buffer_pages);
-
-    char* current_page;
-    int run_page_count = 0;
-    int total_records_in_run = 0;
-    int last_page_record_count = 0;
+    char* buffer_memory = (char*)malloc(schema->record_size * run_length);
+    long run_record_count = 0;
 
     do {
-        memset(buffer_memory, 0, page_size * num_buffer_pages);
-
-        run_page_count = 0;
-        total_records_in_run = 0;
-
-        // Read in as much as possible till we hit a page that isn't full.
-        for (int j = 0; j < num_buffer_pages - 1; j++){
-            current_page = &buffer_memory[j * page_size];
-            fread(current_page, page_size, 1, in_fp);
-            // Convert page in to some kind of Record
-            run_page_count++;
-            // If this happens we don't want to fill up any more buffer pages but just use what we have.
-            last_page_record_count = total_records_in_page(current_page, schema);
-            if (last_page_record_count < page_max_record_count) {
-                break;
-            }
-        }
+        // Zero out so we can check the number of tecords.
+        memset(buffer_memory, '\0', (schema->record_size * run_length));
+        // Read in as much as possible till.
+        fread(buffer_memory, schema->record_size, run_length, in_fp);
+        // If this ends up being less that page size....we don't want to fill
+        // up any more buffer pages but just use what we have.
+        run_record_count = total_records_in_page(buffer_memory, schema, run_length);
 
         // I'm reading them in, they better be null terminated...
 
         // In-memory sort
-        total_records_in_run = ((run_page_count - 1) * page_max_record_count) + last_page_record_count;
-        qsort(buffer_memory, total_records_in_run, schema->record_size, record_comparator);
+        qsort(buffer_memory, run_record_count, schema->record_size, record_comparator);
 
-        // Write all but the last page back in full page sizes.
-        for (int j = 0; j < run_page_count - 1; j++){
-            current_page = &buffer_memory[j * page_size];
-            fwrite(current_page, page_size, 1, out_fp);
-            fflush(out_fp);
-        }
-
-        // Write the last potentially not full page.
-        current_page = &buffer_memory[(run_page_count - 1) * page_size];
-        fwrite(current_page, last_page_record_count * schema->record_size, 1, out_fp);
+        // Write back sorted data.
+        fwrite(buffer_memory, schema->record_size, run_record_count, out_fp);
         fflush(out_fp);
-    } while (last_page_record_count < page_max_record_count);
+    } while (run_record_count < run_length);
     free(buffer_memory);
 }
 
