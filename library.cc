@@ -39,8 +39,6 @@ int read_schema(const char* schema_file, Schema* schema) {
     return 0;
 }
 
-static Schema* comparatorSchema;
-
 int offset_to_attribute(Schema *schema, int attr) {
     int offset = 0;
     for (int i = 0; i < schema->nattrs; i++) {
@@ -53,28 +51,17 @@ int record_comparator(const void* a, const void* b){
     int return_val = 0;
     int attr;
     int offset;
-    for (int i = 0; i < comparatorSchema->n_sort_attrs; i++) {
-        attr = comparatorSchema->sort_attrs[i];
-        offset = offset_to_attribute(comparatorSchema, attr);
-        return_val = strncmp((const char *)a +  offset, (const char *)b + offset, sizeof_attr(comparatorSchema->attrs[attr]));
+    Record* r1 = (Record *)a;
+    Record* r2 = (Record *)b;
+    for (int i = 0; i < r1->schema->n_sort_attrs; i++) {
+        attr = r1->schema->sort_attrs[i];
+        offset = offset_to_attribute(r1->schema, attr);
+        return_val = strncmp(r1->data + offset, r2->data + offset, sizeof_attr(r1->schema->attrs[attr]));
         if (return_val != 0) {
             break;
         }
     }
     return return_val;
-}
-
-long total_records_in_page(char* buffer_memory, Schema *schema, long run_length) {
-    char* record;
-    long record_count = 0;
-    for (long i = 0; i < run_length; i++){
-        record = &buffer_memory[i * schema->record_size];
-        if (record[0] == '\0'){
-            return record_count;
-        }
-        record_count++;
-    }
-    return record_count;
 }
 
 void mk_runs(FILE *in_fp, FILE *out_fp, long run_length, Schema *schema) {
@@ -84,33 +71,38 @@ void mk_runs(FILE *in_fp, FILE *out_fp, long run_length, Schema *schema) {
     size_t buffer_size = schema->record_size * run_length;
     char* buffer_memory = (char*)malloc(buffer_size);
     long run_record_count = 0;
-    Record records[run_length];
-
-    comparatorSchema = schema;
+    Record* records[run_length];
 
     do {
+        run_record_count = 0;
         // Zero out so we can check the number of tecords.
         memset(buffer_memory, '\0', buffer_size);
 
         // Read in as much as possible till.
         fread(buffer_memory, schema->record_size, run_length, in_fp);
 
-        // If this ends up being less that page size....we don't want to fill
-        // up any more buffer pages but just use what we have.
-        run_record_count = total_records_in_page(buffer_memory, schema, run_length);
-
         // I'm reading them in, they better be null terminated...
-        for (int j = 0; j < run_record_count; j++) {
-            // Create record using data + schema then we don't need static scheme anymore....
+        for (int j = 0; j < run_length; j++) {
+            Record* record = (Record*)malloc(sizeof(Record));
+            record->data = buffer_memory+ (schema->record_size * j);
+            if (record->data[0] == '\0') {
+                break;
+            }
+            record->schema = schema;
+            records[j] = record;
+            run_record_count++;
         }
 
         // In-memory sort
-        qsort(buffer_memory, run_record_count, schema->record_size, record_comparator);
+        qsort(records, run_record_count, schema->record_size, record_comparator);
 
         // Write back sorted data.
         fwrite(buffer_memory, schema->record_size, run_record_count, out_fp);
         fflush(out_fp);
-    } while (run_record_count < run_length);
+        for (int j = 0; j < run_record_count; j++) {
+            free(records[j]);
+        }
+    } while (run_record_count == run_length);
 
     free(buffer_memory);
 }
