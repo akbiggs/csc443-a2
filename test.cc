@@ -1,7 +1,9 @@
+#include <stdio.h>
 #include "library.h"
 
 #include "test_lib/UnitTest++.h"
 #include "test_lib/ReportAssert.h"
+
 
 using namespace UnitTest;
 
@@ -42,13 +44,13 @@ TEST(SizeOfRecord) {
     Schema* schema = (Schema*) malloc(sizeof(Schema));
     test_open_schema("schema_example.json", schema);
 
-    CHECK_EQUAL(schema->record_size, 25);
+    CHECK_EQUAL(schema->record_size, 29LU);
 
     free(schema);
 }
 
 TEST(MakeRuns) {
-    FILE* in = fopen("data_example.csv", "r");
+    FILE* in = fopen("mydata.csv", "r");
     FILE* out = fopen("test_out.csv", "w");
     
     int run_length = 2;
@@ -62,7 +64,32 @@ TEST(MakeRuns) {
 
     mk_runs(in, out, run_length, schema);
 
-    fseek(out, 0, SEEK_SET);
+    fclose(out);
+    out = fopen("test_out.csv", "r");
+    
+    size_t line_length = schema->record_size + 1;
+    char* line = (char*) malloc(line_length);
+
+    int num_lines = 0;
+    int first_cgpa = 0;
+    int second_cgpa = 0;
+    while (fgets(line, line_length, out)) {
+        int cgpa = atoi(line + 26);
+
+        if (num_lines % 2 == 0) {
+            if (num_lines != 0) {
+                CHECK(first_cgpa <= second_cgpa);
+            }
+
+            first_cgpa = cgpa;
+        } else {
+            second_cgpa = cgpa;
+        }
+
+        num_lines++;
+    }
+
+    CHECK_EQUAL(num_lines, 100);
 
     fclose(out);
     fclose(in);

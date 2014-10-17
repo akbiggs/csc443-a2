@@ -28,7 +28,7 @@ size_t sizeof_attr(Attribute* attr);
 typedef struct {
     Attribute **attrs;
     int nattrs;
-    int *sort_attrs;
+    int* sort_attrs;
     int n_sort_attrs;
 
     size_t record_size;
