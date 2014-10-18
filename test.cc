@@ -64,7 +64,7 @@ TEST(MakeRuns) {
     FILE* in = fopen("test_files/test_data.csv", "r");
     FILE* out = fopen("test_files/out.csv", "w");
     
-    int run_length = 14;
+    int run_length = 7;
 
     Schema* schema = (Schema*)malloc(sizeof(Schema));
     test_open_schema("test_files/schema_example.json", schema);
@@ -121,7 +121,7 @@ TEST(MakeRunIterator) {
     Schema* schema = (Schema*) malloc(sizeof(Schema));
     test_open_schema("test_files/schema_example.json", schema);
 
-    int run_length = 900;
+    int run_length = 7;
     int start = schema->record_size * run_length * 8;
     
     RunIterator* ri = new RunIterator(fp, start, run_length,
