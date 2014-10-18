@@ -216,6 +216,8 @@ RunIterator* get_iterator_with_smallest_value(RunIterator *iterators[], int num_
 
 void merge_runs(RunIterator *iterators[], int num_runs, FILE *out_fp,
     long start_pos, char *buf, long buf_size) {
+
+    fseek(out_fp, start_pos, SEEK_SET);
     // Assume proper input i.e. all records are the same size.
     int record_size = iterators[0]->get_record_size();
     int max_number_of_records_in_buffer = floor(buf_size/record_size);
