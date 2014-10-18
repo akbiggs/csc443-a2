@@ -91,6 +91,7 @@ private:
     long run_length;
     long records_left;
 
+    void read_into_buffer();
     Schema *schema;
 };
 

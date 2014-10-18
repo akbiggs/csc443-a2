@@ -63,7 +63,7 @@ TEST(AttributeOffset) {
 TEST(MakeRuns) {
     FILE* in = fopen("test_files/test_data.csv", "r");
     FILE* out = fopen("test_files/out.csv", "w");
-    
+
     int run_length = 7;
 
     Schema* schema = (Schema*)malloc(sizeof(Schema));
@@ -78,7 +78,7 @@ TEST(MakeRuns) {
 
     fclose(out);
     out = fopen("test_files/out.csv", "r");
-    
+
     size_t line_length = schema->record_size + 1;
     char* line = (char*) malloc(line_length);
 
@@ -116,17 +116,16 @@ TEST(MakeRuns) {
 
 TEST(MakeRunIterator) {
     FILE* fp = fopen("test_files/out.csv", "r");
-    FILE* fp2 = fopen("test_files/out.csv", "r");
 
     Schema* schema = (Schema*) malloc(sizeof(Schema));
     test_open_schema("test_files/schema_example.json", schema);
 
     int run_length = 7;
     int start = schema->record_size * run_length * 8;
-    
     RunIterator* ri = new RunIterator(fp, start, run_length,
             schema->record_size * 3, schema);
 
+    FILE* fp2 = fopen("test_files/out.csv", "r");
     fseek(fp2, start, SEEK_SET);
 
     char data[schema->record_size + 1];
@@ -137,6 +136,8 @@ TEST(MakeRunIterator) {
 
         fread(data, schema->record_size, 1, fp2);
 
+        //printf("data is %s\n", data);
+        //printf("rdata is %s\n", r->data);
         CHECK(strncmp(r->data, data, schema->record_size) == 0);
     }
 
