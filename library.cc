@@ -1,7 +1,5 @@
 #include "library.h"
 
-#define MIN(x, y) (((x) < (y)) ? (x) : (y))
-
 int read_schema(const char* schema_file, Schema* schema) {
     Json::Value root;
     Json::Reader reader;
@@ -197,7 +195,7 @@ void merge_runs(RunIterator *iterators[], int num_runs, FILE *out_fp,
 
 RunIterator::RunIterator(FILE *fp, long start_pos, long run_length, long buf_size,
         Schema *schema){
-    
+
 }
 
 Record* RunIterator::next(){
@@ -209,5 +207,5 @@ bool RunIterator::has_next(){
 }
 
 RunIterator::~RunIterator(){
-    
+
 }
