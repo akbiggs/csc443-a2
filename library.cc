@@ -209,7 +209,7 @@ bool iterators_have_records(RunIterator *iterators[], int num_runs) {
 RunIterator* get_iterator_with_smallest_value(RunIterator *iterators[], int num_runs) {
     RunIterator* min_record_iterator = NULL;
     for (int i = 0; i < num_runs; i++){
-        if (iterators[i]->has_next()){
+        if (iterators[i]->get_current_record() != NULL){
              if (min_record_iterator == NULL || record_comparator(min_record_iterator->get_current_record(), iterators[i]->get_current_record()) > 0){
                 min_record_iterator = iterators[i];
              }
