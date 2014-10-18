@@ -151,7 +151,11 @@ void RunIterator::read_into_buffer() {
 
     this->buffer = (char*) malloc(this->left_in_buf * this->schema->record_size);
     memset(this->buffer, '\0', this->buf_size);
-    fread(this->buffer, this->schema->record_size, this->left_in_buf, this->fp);
+    int records_read;
+    if ((records_read = fread(this->buffer, this->schema->record_size, this->left_in_buf, this->fp)) < this->left_in_buf) {
+        // we are out of records
+        this->records_left = records_read;
+    }
 }
 
 Record* RunIterator::next() {
@@ -180,7 +184,7 @@ bool RunIterator::has_next() {
         this->read_into_buffer();
     }
     bool potentially_has_next_record = (this->left_in_buf == 0) || (this->buffer != '\0');
-    return (this->records_left > 0) && potentially_has_next_record;
+    return (this->records_left > 0 && potentially_has_next_record);
 }
 
 /** MERGE RUNS **/

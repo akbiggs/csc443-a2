@@ -1,10 +1,9 @@
-import csv
-
 from json import load
 from random import choice, uniform, gauss
 from string import ascii_lowercase, digits
 from sys import argv, exit
 from decimal import Decimal
+
 
 def generate_data(schema, out_file, nrecords):
     '''
@@ -28,6 +27,7 @@ def generate_data(schema, out_file, nrecords):
         for i in range(nrecords):
             record = generate_record(schema)
             records_file.write("{}\n".format(','.join(record)))
+
 
 def generate_record(schema):
     record = []
@@ -55,7 +55,7 @@ def generate_record(schema):
         else:
             alphabet = digits + ascii_lowercase
             record_data = ''.join(choice(alphabet) for _ in range(length))
-        
+
         if record_data:
             record.append(record_data)
 

@@ -129,17 +129,62 @@ TEST(MakeRunIterator) {
     fseek(fp2, start, SEEK_SET);
 
     char data[schema->record_size + 1];
-    for (int i = 0; i < run_length; i++) {
+    int i;
+    for (i = 0; i < run_length; i++) {
         CHECK(ri->has_next());
         CHECK(ri->has_next()); // make sure has_next() can be run multiple times
         Record* r = ri->next();
 
-        fread(data, schema->record_size, 1, fp2);
+        if (fread(data, schema->record_size, 1, fp2) == 0) {
+            break;
+        }
 
         //printf("data is %s\n", data);
         //printf("rdata is %s\n", r->data);
         CHECK(strncmp(r->data, data, schema->record_size) == 0);
     }
+    CHECK(i == 7);
+
+    CHECK(!ri->has_next());
+
+    free(ri);
+    fclose(fp);
+}
+
+
+TEST(MakeRunIteratorRunLengthTooLong) {
+    FILE* fp = fopen("test_files/5_records.csv", "r");
+
+    Schema* schema = (Schema*) malloc(sizeof(Schema));
+    test_open_schema("test_files/schema_example.json", schema);
+
+    int run_length = 7;
+    int start = 0;
+    RunIterator* ri = new RunIterator(fp, start, run_length,
+            schema->record_size * 3, schema);
+
+    FILE* fp2 = fopen("test_files/5_records.csv", "r");
+
+    char data[schema->record_size + 1];
+    int i;
+    for (i = 0; i < run_length; i++) {
+        if (!ri->has_next()) {
+            break;
+        }
+        CHECK(ri->has_next());
+        CHECK(ri->has_next()); // make sure has_next() can be run multiple times
+        Record* r = ri->next();
+
+        if (fread(data, schema->record_size, 1, fp2) == 0) {
+            break;
+        }
+
+        //printf("data is %s\n", data);
+        //printf("rdata is %s\n", r->data);
+        CHECK(strncmp(r->data, data, schema->record_size) == 0);
+    }
+    //printf("i is %d\n", i);
+    CHECK(i == 5);
 
     CHECK(!ri->has_next());
 
