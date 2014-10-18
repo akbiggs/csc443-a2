@@ -166,6 +166,7 @@ Record* RunIterator::get_current_record() {
 
 Record* RunIterator::next() {
     if (!this->has_next()) {
+        this->current_record = NULL;
         return NULL;
     }
 
