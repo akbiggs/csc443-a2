@@ -129,7 +129,8 @@ RunIterator::RunIterator(FILE* fp, long start_pos, long run_length, long buf_siz
     this->end_file_pos = start_pos + (run_length * schema->record_size);
 
     this->schema = schema;
-}
+    this->current_record = (Record*)malloc(sizeof(Record))
+;}
 
 RunIterator::~RunIterator() {
     fclose(this->fp);
@@ -156,6 +157,10 @@ void RunIterator::read_into_buffer() {
     }
 }
 
+Record* RunIterator::get_current_record() {
+    return this->current_record;
+}
+
 Record* RunIterator::next() {
     if (!this->has_next()) {
         return NULL;
@@ -168,13 +173,12 @@ Record* RunIterator::next() {
     this->left_in_buf--;
     this->records_left--;
 
-    Record* record = (Record*)malloc(sizeof(Record));
-    record->data = record_data;
-    record->schema = schema;
+    this->current_record->data = record_data;
+    this->current_record->schema = schema;
 
     //printf("record data is %s\n", record_data);
 
-    return record;
+    return this->current_record;
 }
 
 bool RunIterator::has_next() {
@@ -185,9 +189,55 @@ bool RunIterator::has_next() {
     return (this->records_left > 0 && potentially_has_next_record);
 }
 
+int RunIterator::get_record_size() {
+    return this->schema->record_size;
+}
 /** MERGE RUNS **/
+bool iterators_have_records(RunIterator *iterators[], int num_runs) {
+    for (int i = 0; i < num_runs; i++) {
+        if (iterators[i]->has_next()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+RunIterator* get_iterator_with_smallest_value(RunIterator *iterators[], int num_runs) {
+    RunIterator* min_record_iterator = NULL;
+    for (int i = 0; i < num_runs; i++){
+        if (iterators[i]->has_next()){
+             if (min_record_iterator == NULL || record_comparator(min_record_iterator->get_current_record(), iterators[i]->get_current_record()) > 0){
+                min_record_iterator = iterators[i];
+             }
+        }
+    }
+    return min_record_iterator;
+}
+
 void merge_runs(RunIterator *iterators[], int num_runs, FILE *out_fp,
     long start_pos, char *buf, long buf_size) {
-    //
+    // Assume proper input i.e. all records are the same size.
+    int record_size = iterators[0]->get_record_size();
+    int max_number_of_records_in_buffer = floor(buf_size/record_size);
+
+    RunIterator* min_record_iterator;
+    int records_in_buffer;
+    char* buffer_pos;
+    while(iterators_have_records(iterators, num_runs)) {
+        records_in_buffer = 0;
+        buffer_pos = buf;
+        for (int i = 0; i < max_number_of_records_in_buffer; i++) {
+            min_record_iterator = get_iterator_with_smallest_value(iterators, num_runs);
+            if (min_record_iterator == NULL) {
+                break;
+            }
+            strncpy(buffer_pos, min_record_iterator->get_current_record()->data, record_size);
+            records_in_buffer++;
+            buffer_pos += record_size;
+        }
+
+        fwrite(buf, record_size, records_in_buffer, out_fp);
+        fflush(out_fp);
+    }
 }
 
