@@ -199,7 +199,7 @@ int RunIterator::get_record_size() {
 /** MERGE RUNS **/
 bool iterators_have_records(RunIterator *iterators[], int num_runs) {
     for (int i = 0; i < num_runs; i++) {
-        if (iterators[i]->has_next()) {
+        if (iterators[i]->get_current_record() != NULL) {
             return true;
         }
     }
