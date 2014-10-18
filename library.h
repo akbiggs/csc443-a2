@@ -82,9 +82,15 @@ public:
 
 private:
     FILE* fp;
-    long current_pos;
-    long end_pos;
+    char* buffer;
     long buf_size;
+    long left_in_buf;
+
+    long file_pos;
+    long end_file_pos;
+    long run_length;
+    long records_left;
+
     Schema *schema;
 };
 

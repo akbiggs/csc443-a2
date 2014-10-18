@@ -120,9 +120,14 @@ RunIterator::RunIterator(FILE* fp, long start_pos, long run_length, long buf_siz
     this->fp = fp;
     fseek(this->fp, start_pos, SEEK_SET);
 
-    this->current_pos = start_pos;
-    this->end_pos = start_pos + run_length * schema->record_size;
     this->buf_size = buf_size;
+    this->left_in_buf = 0;
+
+    this->file_pos = start_pos;
+    this->run_length = run_length;
+    this->records_left = this->run_length;
+    this->end_file_pos = start_pos + run_length * schema->record_size;
+
     this->schema = schema;
 }
 
@@ -132,22 +137,39 @@ RunIterator::~RunIterator() {
 }
 
 Record* RunIterator::next() {
+    if (!this->has_next()) {
+        return NULL;
+    }
+
+    size_t record_size = this->schema->record_size;
+
+    if (left_in_buf == 0) {
+        if ((unsigned int) (this->buf_size / record_size) < this->run_length) {
+            this->left_in_buf = this->buf_size / record_size;
+        } else {
+            this->left_in_buf = this->run_length;
+        }
+
+        this->buffer = (char*) malloc(this->left_in_buf * record_size);
+        fread(this->buffer, record_size, this->left_in_buf, this->fp);
+    }
+
+    char* record_data = (char*)malloc(record_size);
+    strncpy(record_data, this->buffer, record_size);
+
+    this->buffer += record_size;
+    this->left_in_buf--;
+    this->records_left--;
+
     Record* record = (Record*)malloc(sizeof(Record));
-    char record_data[this->schema->record_size];
-
-    fread(record_data, this->schema->record_size, 1, this->fp);
-
     record->data = record_data;
     record->schema = schema;
 
-    this->current_pos += this->schema->record_size;
-
     return record;
-
 }
 
 bool RunIterator::has_next() {
-    return this->current_pos < this->end_pos;
+    return this->records_left > 0;
 }
 
 /** MERGE RUNS **/
