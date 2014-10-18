@@ -1,5 +1,7 @@
 #include "library.h"
 
+#define MIN(x, y) (((x) < (y)) ? (x) : (y))
+
 int read_schema(const char* schema_file, Schema* schema) {
     Json::Value root;
     Json::Reader reader;
@@ -54,7 +56,7 @@ int record_comparator(const void* a, const void* b){
         int attr = r1->schema->sort_attrs[i];
         int offset = offset_to_attribute(r1->schema, attr);
         int attr_length = r1->schema->attrs[attr]->length;
-        
+
         return_val = strncmp(r1->data + offset, r2->data + offset, attr_length);
         if (return_val != 0) {
             break;
@@ -113,6 +115,79 @@ void mk_runs(FILE *in_fp, FILE *out_fp, long run_length, Schema *schema) {
     free(buffer_memory);
 }
 
+/** RUN ITERATOR **/
+
+RunIterator::RunIterator(FILE* fp, long start_pos, long run_length, long buf_size,
+        Schema* schema) {
+    this->fp = fp;
+    fseek(this->fp, start_pos, SEEK_SET);
+
+    this->buf_size = buf_size;
+    this->left_in_buf = 0;
+
+    this->file_pos = start_pos;
+    this->run_length = run_length;
+    this->records_left = this->run_length;
+    this->end_file_pos = start_pos + (run_length * schema->record_size);
+
+    this->schema = schema;
+}
+
+RunIterator::~RunIterator() {
+    fclose(this->fp);
+    free(schema);
+}
+
+void RunIterator::read_into_buffer() {
+    if (this->left_in_buf > 0) {
+        return;
+    }
+
+    if ((unsigned int) (this->buf_size / this->schema->record_size) < this->run_length) {
+        this->left_in_buf = this->buf_size / this->schema->record_size;
+    } else {
+        this->left_in_buf = this->run_length;
+    }
+
+    this->buffer = (char*) malloc(this->left_in_buf * this->schema->record_size);
+    memset(this->buffer, '\0', this->buf_size);
+    int records_read;
+    if ((records_read = fread(this->buffer, this->schema->record_size, this->left_in_buf, this->fp)) < this->left_in_buf) {
+        // we are out of records
+        this->records_left = records_read;
+    }
+}
+
+Record* RunIterator::next() {
+    if (!this->has_next()) {
+        return NULL;
+    }
+
+    char* record_data = (char*)malloc(this->schema->record_size);
+    strncpy(record_data, this->buffer, this->schema->record_size);
+
+    this->buffer += this->schema->record_size;
+    this->left_in_buf--;
+    this->records_left--;
+
+    Record* record = (Record*)malloc(sizeof(Record));
+    record->data = record_data;
+    record->schema = schema;
+
+    //printf("record data is %s\n", record_data);
+
+    return record;
+}
+
+bool RunIterator::has_next() {
+    if (this->left_in_buf == 0) {
+        this->read_into_buffer();
+    }
+    bool potentially_has_next_record = (this->left_in_buf == 0) || (this->buffer != '\0');
+    return (this->records_left > 0 && potentially_has_next_record);
+}
+
+/** MERGE RUNS **/
 void merge_runs(RunIterator *iterators[], int num_runs, FILE *out_fp,
     long start_pos, char *buf, long buf_size) {
     // Your implementation
