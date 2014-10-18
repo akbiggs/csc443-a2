@@ -158,6 +158,9 @@ void RunIterator::read_into_buffer() {
 }
 
 Record* RunIterator::get_current_record() {
+    if (this->records_left == this->run_length) {
+        return this->next();
+    }
     return this->current_record;
 }
 
@@ -236,6 +239,7 @@ void merge_runs(RunIterator *iterators[], int num_runs, FILE *out_fp,
             strncpy(buffer_pos, min_record_iterator->get_current_record()->data, record_size);
             records_in_buffer++;
             buffer_pos += record_size;
+            min_record_iterator->next();
         }
 
         fwrite(buf, record_size, records_in_buffer, out_fp);
