@@ -141,9 +141,9 @@ RunIterator::RunIterator(FILE* fp, long start_pos, long run_length, long buf_siz
 ;}
 
 RunIterator::~RunIterator() {
-    // Other things could be using this.
-    //fclose(this->fp);
-    //free(schema);
+    free(this->current_record->data);
+    free(this->current_record);
+    free(this->buffer);
 }
 
 void RunIterator::read_into_buffer() {
