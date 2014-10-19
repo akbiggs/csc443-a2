@@ -80,9 +80,13 @@ public:
     */
     bool has_next();
 
+    int get_record_size();
+    Record *get_current_record();
+
 private:
     FILE* fp;
     char* buffer;
+    char* buffer_pointer;
     long buf_size;
     long left_in_buf;
 
@@ -93,6 +97,7 @@ private:
 
     void read_into_buffer();
     Schema *schema;
+    Record *current_record;
 };
 
 /**
