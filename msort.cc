@@ -37,9 +37,8 @@ int main(int argc, const char* argv[]) {
     int sort_attrs[schema->n_sort_attrs];
     for (int i = 0; i < schema->n_sort_attrs; i++) {
         for (int j = 0; j < schema->nattrs; j++) {
-            printf("before strcmp of %s and %s\n", argv[6 + i], schema->attrs[j]->name);
+            //printf("before strcmp of %s and %s which is %d\n", argv[6 + i], schema->attrs[j]->name, strcmp(argv[6 + i], schema->attrs[j]->name));
             if (strcmp(argv[6 + i], schema->attrs[j]->name) == 0) {
-                printf("found it\n");
                 sort_attrs[i] = j;
                 break;
             }
@@ -47,9 +46,6 @@ int main(int argc, const char* argv[]) {
     }
 
     schema->sort_attrs = sort_attrs;
-    // TODO fix the above loop and get rid of this.
-    schema->n_sort_attrs = 1;
-    schema->sort_attrs[0] = 3;
 
     if (schema->record_size > atoi(argv[4])) {
         printf("Not enough memeory to read in a record.\n");
