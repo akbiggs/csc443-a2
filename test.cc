@@ -246,6 +246,8 @@ TEST(MakeRun) {
         if (fread(result_record, schema->record_size, 1, result_fp) == 0) {
             break;
         }
+        //printf("data is %s\n", result_record);
+        //printf("expected data is %s\n", expected_record);
         CHECK(strcmp(expected_record, result_record) == 0);
     }
     CHECK(i == 5);
