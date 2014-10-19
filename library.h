@@ -86,6 +86,7 @@ public:
 private:
     FILE* fp;
     char* buffer;
+    char* buffer_pointer;
     long buf_size;
     long left_in_buf;
 

@@ -192,6 +192,68 @@ TEST(MakeRunIteratorRunLengthTooLong) {
     fclose(fp);
 }
 
+TEST(MakeRun) {
+    FILE* fp = fopen("test_files/5_records.csv", "r");
+    FILE* out_fp = fopen("test_files/5_records_runs.csv", "w");
+
+    Schema* schema = (Schema*) malloc(sizeof(Schema));
+    test_open_schema("test_files/schema_example.json", schema);
+    schema->n_sort_attrs = 2;
+    schema->sort_attrs = (int*)malloc(sizeof(int)*2);
+    schema->sort_attrs[0] = 3;
+    schema->sort_attrs[1] = 2;
+    int run_length = 2;
+
+
+    mk_runs(fp, out_fp, 2, schema);
+    fclose(out_fp);
+    fclose(fp);
+
+    fp = fopen("test_files/5_records_runs.csv", "r");
+    out_fp = fopen("test_files/5_records_sorted.csv", "w");
+    int start1 = 0;
+    int start2 = schema->record_size * run_length;
+    int start3 = schema->record_size * run_length * 2;
+    RunIterator* ri1 = new RunIterator(fp, start1, run_length,
+            schema->record_size * 3, schema);
+    RunIterator* ri2 = new RunIterator(fp, start2, run_length,
+            schema->record_size * 3, schema);
+    RunIterator* ri3 = new RunIterator(fp, start3, run_length,
+            schema->record_size * 3, schema);
+
+    RunIterator *iterators[3] = {ri1, ri2, ri3};
+
+    long start_pos = 0;
+    char buf[300];
+    long buf_size = 3 * schema->record_size;
+    merge_runs(iterators, 3, out_fp, start_pos, buf, buf_size);
+    fclose(fp);
+    fclose(out_fp);
+
+    FILE* expected_fp = fopen("test_files/5_records_sorted_expected.csv", "r");
+    FILE* result_fp = fopen("test_files/5_records_sorted.csv", "r");
+    char expected_record[schema->record_size + 1];
+    char result_record[schema->record_size + 1];
+
+    expected_record[schema->record_size + 1] = '\0';
+    result_record[schema->record_size + 1] = '\0';
+
+    int i;
+    for (i = 0; i < 5; i++) {
+        if(fread(expected_record, schema->record_size, 1, expected_fp) == 0) {
+            break;
+        };
+        if (fread(result_record, schema->record_size, 1, result_fp) == 0) {
+            break;
+        }
+        CHECK(strcmp(expected_record, result_record) == 0);
+    }
+    CHECK(i == 5);
+    fclose(result_fp);
+    fclose(expected_fp);
+    free(schema);
+}
+
 int main() {
     return UnitTest::RunAllTests();
 }
