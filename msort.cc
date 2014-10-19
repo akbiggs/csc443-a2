@@ -35,14 +35,21 @@ int main(int argc, const char* argv[]) {
 
     schema->n_sort_attrs = argc - 6;
     int sort_attrs[schema->n_sort_attrs];
+    int attr_index = -1;
     for (int i = 0; i < schema->n_sort_attrs; i++) {
+        attr_index = -1;
         for (int j = 0; j < schema->nattrs; j++) {
             //printf("before strcmp of %s and %s which is %d\n", argv[6 + i], schema->attrs[j]->name, strcmp(argv[6 + i], schema->attrs[j]->name));
             if (strcmp(argv[6 + i], schema->attrs[j]->name) == 0) {
-                sort_attrs[i] = j;
+                attr_index = j;
                 break;
             }
         }
+        if (attr_index == -1) {
+            printf("Attr %s was not found in the schema\n", argv[6+i]);
+            return 2;
+        }
+        sort_attrs[i] = attr_index;;
     }
 
     schema->sort_attrs = sort_attrs;
@@ -50,7 +57,7 @@ int main(int argc, const char* argv[]) {
     if (schema->record_size > atoi(argv[4])) {
         printf("Not enough memeory to read in a record.\n");
         free(schema);
-        return 2;
+        return 3;
     }
 
     long memory_capacity = atoi(argv[4]);
