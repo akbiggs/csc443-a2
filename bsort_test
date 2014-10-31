@@ -1,0 +1,10 @@
+#!/bin/bash
+
+rm -rf test_out.i
+rm -rf leveldb_dir 
+make
+./bsort test_files/schema.json test_files/5_records.csv test_out.i cgpa start_year
+echo ""
+echo "Sorted File:"
+cat test_out.i
+

@@ -22,7 +22,7 @@ test: test.cc library.o jsoncpp.o
 msort: msort.cc library.o jsoncpp.o
 	$(CC) -o $@ $^ $(CCFLAGS)
 
-bsort: bsort.cc jsoncpp.o
+bsort: bsort.cc library.o jsoncpp.o
 	$(CC) -o $@ $^ $(CCFLAGS) $(LEVELDB_OPTS)
 	
 clean:
