@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <fstream>
+#include <sys/timeb.h>
 
 #include "leveldb/db.h"
 #include "json/json.h"
@@ -48,10 +49,16 @@ int main(int argc, const char* argv[]) {
     options.create_if_missing = true;
     leveldb::Status status = leveldb::DB::Open(options, "./leveldb_dir", &db);
     
+    //Check if 
     if(!status.ok()){
         std::cout << "Failed to create B+tree" << std::endl;
         return 5;
     }
+    
+    //Record Start Time
+    struct timeb t;
+    ftime(&t);
+    long start_ms = t.time * 1000 + t.millitm;
     
     //Read records and insert into B+ tree.
     char buffer[schema.record_size+3];
@@ -63,7 +70,6 @@ int main(int argc, const char* argv[]) {
     int counter = 0;
     
     leveldb::WriteOptions write_opts;
-    
     while(!feof(input_file)){
         std::cout << counter << ": " << buffer << std::endl;
         
@@ -90,7 +96,7 @@ int main(int argc, const char* argv[]) {
     }
     fclose(input_file);
     
-    //Read records from B+ tree and write to 
+    //Read records from B+ tree and write to sorted file.
     std::cout << "Iterating B+ tree" << std::endl;
     leveldb::Iterator* it = db->NewIterator(leveldb::ReadOptions());
     counter = 0;
@@ -102,9 +108,20 @@ int main(int argc, const char* argv[]) {
         out_index << value.ToString() << std::endl;
         counter++;
     }
+    
+    //Calculate program runtime.
+    ftime(&t);
+    long end_ms = t.time * 1000 + t.millitm;
+    
+    //Print metrics.
+    std::cout << "TIME: " << (end_ms - start_ms) << std::endl;
+    std::cout << "TOTAL NUMBER OF RECORDS : " << counter << std::endl;
+    
     out_index.close();
     delete it;
     delete db;
+    
+    
     
     return 0;
 }
