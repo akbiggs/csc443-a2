@@ -22,24 +22,8 @@ int main(int argc, const char* argv[]) {
         return 2;
     }
     
-    schema.n_sort_attrs = argc - 4;
-    int sort_attrs[schema.n_sort_attrs];
-    int attr_index = -1;
-    for (int i = 0; i < schema.n_sort_attrs; i++) {
-        attr_index = -1;
-        for (int j = 0; j < schema.nattrs; j++) {
-            if (strcmp(argv[4 + i], schema.attrs[j]->name) == 0) {
-                attr_index = j;
-                break;
-            }
-        }
-        if (attr_index == -1) {
-            std::cout << "Attr " << argv[4+i] << " was not found in the schema" << std::endl;
-            return 2;
-        }
-        sort_attrs[i] = attr_index;;
-    }
-    schema.sort_attrs = sort_attrs;
+    //Create list of attributes to sort.
+    init_sort_attrs(&schema, argv + 4, argc - 4);
     
     //Open input file
     FILE* input_file = fopen(argv[2], "rb");
@@ -56,6 +40,7 @@ int main(int argc, const char* argv[]) {
         return 4;
     }
     
+    //Create B+ tree
     leveldb::DB *db;
     leveldb::Options options;
     options.create_if_missing = true;

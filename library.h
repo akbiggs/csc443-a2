@@ -33,6 +33,7 @@ typedef struct {
 } Schema;
 
 int read_schema(const char* schema_file, Schema *schema);
+int init_sort_attrs(Schema* schema, const char** attrs, int num_attr);
 int offset_to_attribute(Schema *schema, int attr);
 
 /**

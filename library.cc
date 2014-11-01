@@ -35,6 +35,28 @@ int read_schema(const char* schema_file, Schema* schema) {
     return 0;
 }
 
+int init_sort_attrs(Schema* schema, const char** attrs, int num_attr){
+    schema->n_sort_attrs = num_attr;
+    schema->sort_attrs = (int*)malloc(sizeof(int)*num_attr);
+    int attr_index = -1;
+    for (int i = 0; i < schema->n_sort_attrs; i++) {
+        attr_index = -1;
+        for (int j = 0; j < schema->nattrs; j++) {
+            //printf("before strcmp of %s and %s which is %d\n", argv[6 + i], schema->attrs[j]->name, strcmp(argv[6 + i], schema->attrs[j]->name));
+            if (strcmp(attrs[i], schema->attrs[j]->name) == 0) {
+                attr_index = j;
+                break;
+            }
+        }
+        if (attr_index == -1){
+            printf("Attr %s was not found in the schema\n", attrs[i]);
+            return 1;
+        }
+        schema->sort_attrs[i] = attr_index;;
+    }
+    return 0;
+}
+
 int offset_to_attribute(Schema *schema, int attr) {
     int offset = 0;
     for (int i = 0; i < attr; i++) {
