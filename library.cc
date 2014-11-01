@@ -49,7 +49,6 @@ int init_sort_attrs(Schema* schema, const char** attrs, int num_attr){
             }
         }
         if (attr_index == -1){
-            printf("Attr %s was not found in the schema\n", attrs[i]);
             return 1;
         }
         schema->sort_attrs[i] = attr_index;;

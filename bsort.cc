@@ -23,7 +23,9 @@ int main(int argc, const char* argv[]) {
     }
     
     //Create list of attributes to sort.
-    init_sort_attrs(&schema, argv + 4, argc - 4);
+    if(init_sort_attrs(&schema, argv + 4, argc - 4)){
+        std::cout << "Failed to find sort attribute in schema" << std::endl;
+    }
     
     //Open input file
     FILE* input_file = fopen(argv[2], "rb");

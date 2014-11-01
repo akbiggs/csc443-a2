@@ -18,7 +18,7 @@ int main(int argc, const char* argv[]) {
     Schema* schema = (Schema*) malloc(sizeof(Schema));
 
     if (read_schema(argv[1], schema)) {
-        printf("Could not read schema from %s\n", argv[1]);
+        cout << "Could not read schema from " << argv[1] << endl;
         free(schema);
         return 1;
     }
@@ -32,10 +32,12 @@ int main(int argc, const char* argv[]) {
         cout << "{name : " << attr_name << ", length : " << attr_len << "}" << endl;
     }
 
-    init_sort_attrs(schema, argv + 6, argc - 6);
+    if(init_sort_attrs(schema, argv + 6, argc - 6)){
+        cout << "Failed to find sort attribute in schema" << endl;
+    }
 
     if (schema->record_size > atoi(argv[4])) {
-        printf("Not enough memeory to read in a record.\n");
+        cout << "Not enough memeory to read in a record." << endl;
         free(schema);
         return 3;
     }
