@@ -30,6 +30,10 @@ typedef struct {
     int n_sort_attrs;
 
     size_t record_size;
+
+    // HACK: Use the schema to keep track of the number of records
+    // in the file currently being sorted so we have a way of knowing
+    // when to stop sorting
 } Schema;
 
 int read_schema(const char* schema_file, Schema *schema);
@@ -100,6 +104,8 @@ private:
     Schema *schema;
     Record *current_record;
 };
+
+int number_of_records(FILE* record_file, size_t record_size);
 
 /**
 * Merge runs given by the `iterators`.

@@ -251,6 +251,18 @@ RunIterator* get_iterator_with_smallest_value(RunIterator *iterators[], int num_
     return min_record_iterator;
 }
 
+int filesize(FILE* file) {
+    int prev_location = ftell(file);
+    fseek(file, 0, SEEK_END);
+    int file_size = ftell(file);
+    fseek(file, prev_location, SEEK_SET);
+    return file_size;
+}
+
+int number_of_records(FILE* record_file, size_t record_size) {
+    return filesize(record_file) / record_size;
+}
+
 void merge_runs(RunIterator *iterators[], int num_runs, FILE *out_fp,
     long start_pos, char *buf, long buf_size) {
 

@@ -256,6 +256,19 @@ TEST(MakeRun) {
     free(schema);
 }
 
+TEST(NumRecords) {
+    FILE* fp = fopen("test_files/5_records.csv", "r");
+    FILE* fp2 = fopen("test_files/test_data.csv", "r");
+    Schema* schema = (Schema*) malloc(sizeof(Schema));
+    test_open_schema("test_files/schema_example.json", schema);
+    
+    CHECK(number_of_records(fp, schema->record_size) == 5);
+    CHECK(number_of_records(fp2, schema->record_size) == 1000);
+
+    free(schema);
+    fclose(fp);
+}
+
 int main() {
     return UnitTest::RunAllTests();
 }
