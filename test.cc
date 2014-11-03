@@ -221,7 +221,7 @@ TEST(MakeRun) {
     RunIterator* ri3 = new RunIterator(fp, start3, run_length,
             schema->record_size * 3, schema);
 
-    RunIterator *iterators[3] = {ri1, ri2, ri3};
+    RunIterator* iterators[3] = {ri1, ri2, ri3};
 
     long start_pos = 0;
     char buf[300];
@@ -267,6 +267,7 @@ TEST(NumRecords) {
 
     free(schema);
     fclose(fp);
+    fclose(fp2);
 }
 
 int main() {
