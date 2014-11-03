@@ -77,8 +77,8 @@ int main(int argc, const char* argv[]) {
     long end_ms = t.time * 1000 + t.millitm;
     
     //Print metrics.
-    std::cout << "TIME: " << (end_ms - start_ms) << std::endl;
     std::cout << "TOTAL NUMBER OF RECORDS : " << 0 << std::endl;
+    std::cout << "TIME: " << (end_ms - start_ms) << std::endl;
     
     // end
     free(schema);
