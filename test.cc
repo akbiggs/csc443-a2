@@ -262,9 +262,15 @@ TEST(NumRecords) {
     Schema* schema = (Schema*) malloc(sizeof(Schema));
     test_open_schema("test_files/schema_example.json", schema);
     
+    int fp_loc = ftell(fp);
+    int fp2_loc = ftell(fp2);
+    
     CHECK(number_of_records(fp, schema->record_size) == 5);
     CHECK(number_of_records(fp2, schema->record_size) == 1000);
 
+    CHECK(ftell(fp) == fp_loc);
+    CHECK(ftell(fp2) == fp2_loc);
+    
     free(schema);
     fclose(fp);
     fclose(fp2);

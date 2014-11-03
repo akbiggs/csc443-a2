@@ -10,7 +10,7 @@
 using namespace std;
 
 int main(int argc, const char* argv[]) {
-    if (argc != 7) {
+    if (argc < 7) {
         cout << "Usage: " << argv[0] << " <schema_file> <input_file> <output_file> <mem_capacity> <k> <sorting_attributes>" << endl;
         exit(1);
     }
@@ -62,32 +62,40 @@ int main(int argc, const char* argv[]) {
     char buf[memory_capacity];
     long buf_size = memory_capacity/(k + 1);
    
-    printf("run length %d\n", run_length);
-    printf("num_records %d\n", num_records);
+    bool flip = false;
     while (run_length < num_records) {
-        printf("run length %d\n", run_length);
-        printf("num_records %d\n", num_records);
         
-        // initialize run iterators
         int num_runs = min(k, (int)ceil((float)num_records / run_length));
+
+        // ugly logic to avoid reading and writing to and from the same file
+        const char* read_filename = flip ? "tmp_file2" : "tmp_file";
+        const char* write_filename;
+        if (num_runs < k || num_runs * run_length == num_records) {
+            write_filename = output_file;
+        } else {
+            write_filename = flip ? "tmp_file" : "tmp_file2";
+        }
+
         RunIterator *iterators[num_runs];
-        FILE *runs = fopen("tmp_file", "r");
+        FILE *runs = fopen(read_filename, "r");
         for (int i = 0; i < num_runs; i++) {
-            printf("Creating iterator %d at %d\n", i, run_length * schema->record_size * i);
             iterators[i] = new RunIterator(runs, run_length * schema->record_size * i, run_length, buf_size, schema);
         }
-        fclose(runs);
-        
+
         // merge and write back to file
-        FILE *sorted_runs = fopen("tmp_file", "w");
-        printf("Merging runs: %d\n", num_runs);
+        FILE *sorted_runs = fopen(write_filename, "w");
         merge_runs(iterators, num_runs, sorted_runs, 0, buf, buf_size);
         fclose(sorted_runs);
+        fclose(runs);
         
+        flip = !flip;
         run_length *= k;
     }
-
+    
     // end
+    remove("tmp_file");
+    remove("tmp_file2");
     free(schema);
+    fclose(in_fp);
     return 0;
 }

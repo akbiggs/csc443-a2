@@ -42,7 +42,6 @@ int init_sort_attrs(Schema* schema, const char** attrs, int num_attr){
     for (int i = 0; i < schema->n_sort_attrs; i++) {
         attr_index = -1;
         for (int j = 0; j < schema->nattrs; j++) {
-            //printf("before strcmp of %s and %s which is %d\n", argv[6 + i], schema->attrs[j]->name, strcmp(argv[6 + i], schema->attrs[j]->name));
             if (strcmp(attrs[i], schema->attrs[j]->name) == 0) {
                 attr_index = j;
                 break;
@@ -187,13 +186,10 @@ void RunIterator::read_into_buffer() {
     }
     this->file_pos += (this->schema->record_size * records_read);
     this->buffer_pointer = this->buffer;
-    //printf("read %d records\n", records_read);
 }
 
 Record* RunIterator::get_current_record() {
     if (this->records_left == this->run_length) {
-        printf("Has current record: %s\n", (this->current_record != NULL ? "true" : "false"));
-        printf("Has next record: %s\n", (this->next() != NULL ? "true" : "false"));
         return this->next();
     }
     return this->current_record;
@@ -210,8 +206,6 @@ Record* RunIterator::next() {
     this->buffer_pointer += this->schema->record_size;
     this->left_in_buf--;
     this->records_left--;
-
-    //printf("record data is %s\n", (this->current_record->data));
 
     return this->current_record;
 }
@@ -231,7 +225,6 @@ int RunIterator::get_record_size() {
 /** MERGE RUNS **/
 bool iterators_have_records(RunIterator *iterators[], int num_runs) {
     for (int i = 0; i < num_runs; i++) {
-        printf("Iterator %d has current record: %s\n", i, (iterators[i]->get_current_record() != NULL ? "true" : "false"));
         if (iterators[i]->get_current_record() != NULL) {
             return true;
         }
@@ -281,13 +274,11 @@ void merge_runs(RunIterator *iterators[], int num_runs, FILE *out_fp,
         for (int i = 0; i < max_number_of_records_in_buffer; i++) {
             min_record_iterator = get_iterator_with_smallest_value(iterators, num_runs);
             if (min_record_iterator == NULL) {
-                printf("No min record iterator, breaking\n");
                 break;
             }
             
             strncpy(buffer_pos, min_record_iterator->get_current_record()->data, record_size);
             records_in_buffer++;
-            printf("Records in buffer: %d\n", records_in_buffer);
             buffer_pos += record_size;
             min_record_iterator->next();
         }
