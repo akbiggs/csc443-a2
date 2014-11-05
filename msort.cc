@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <iostream>
 #include <fstream>
+#include <sys/timeb.h>
 
 #include "library.h"
 #include "json/json.h"
@@ -44,6 +45,11 @@ int main(int argc, const char* argv[]) {
 
     long memory_capacity = atoi(argv[4]);
 
+    //Record Start Time
+    struct timeb t;
+    ftime(&t);
+    long start_ms = t.time * 1000 + t.millitm;
+    
     // Do the sort
     FILE *in_fp = fopen(argv[2], "r");
     FILE *tmp_out = fopen("tmp_file", "w");
@@ -65,6 +71,15 @@ int main(int argc, const char* argv[]) {
     char buf[memory_capacity];
     merge_runs(iterators, k, sorted_runs, 0, buf, buf_size);
 
+    
+    //Calculate program runtime.
+    ftime(&t);
+    long end_ms = t.time * 1000 + t.millitm;
+    
+    //Print metrics.
+    std::cout << "TOTAL NUMBER OF RECORDS : " << 0 << std::endl;
+    std::cout << "TIME: " << (end_ms - start_ms) << std::endl;
+    
     // end
     free(schema);
     fclose(runs);
