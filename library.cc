@@ -42,7 +42,6 @@ int init_sort_attrs(Schema* schema, const char** attrs, int num_attr){
     for (int i = 0; i < schema->n_sort_attrs; i++) {
         attr_index = -1;
         for (int j = 0; j < schema->nattrs; j++) {
-            //printf("before strcmp of %s and %s which is %d\n", argv[6 + i], schema->attrs[j]->name, strcmp(argv[6 + i], schema->attrs[j]->name));
             if (strcmp(attrs[i], schema->attrs[j]->name) == 0) {
                 attr_index = j;
                 break;
@@ -159,7 +158,7 @@ RunIterator::RunIterator(FILE* fp, long start_pos, long run_length, long buf_siz
 
     this->buffer = (char*) malloc(this->buf_size);
     this->buffer_pointer = this->buffer;
-;}
+}
 
 RunIterator::~RunIterator() {
     free(this->current_record->data);
@@ -187,7 +186,6 @@ void RunIterator::read_into_buffer() {
     }
     this->file_pos += (this->schema->record_size * records_read);
     this->buffer_pointer = this->buffer;
-    //printf("read %d records\n", records_read);
 }
 
 Record* RunIterator::get_current_record() {
@@ -209,8 +207,6 @@ Record* RunIterator::next() {
     this->left_in_buf--;
     this->records_left--;
 
-    //printf("record data is %s\n", (this->current_record->data));
-
     return this->current_record;
 }
 
@@ -225,6 +221,7 @@ bool RunIterator::has_next() {
 int RunIterator::get_record_size() {
     return this->schema->record_size;
 }
+
 /** MERGE RUNS **/
 bool iterators_have_records(RunIterator *iterators[], int num_runs) {
     for (int i = 0; i < num_runs; i++) {
@@ -238,23 +235,32 @@ bool iterators_have_records(RunIterator *iterators[], int num_runs) {
 RunIterator* get_iterator_with_smallest_value(RunIterator *iterators[], int num_runs) {
     RunIterator* min_record_iterator = NULL;
     for (int i = 0; i < num_runs; i++){
-        if (iterators[i]->get_current_record() != NULL){
-            if (min_record_iterator != NULL){
-                if (record_object_comparator(min_record_iterator->get_current_record(), iterators[i]->get_current_record()) > 0) {
-                    min_record_iterator = iterators[i];
-                }
-            } else {
-                min_record_iterator = iterators[i];
-            }
+        Record* cur = iterators[i]->get_current_record();
+        if (cur != NULL && (min_record_iterator == NULL || record_object_comparator(min_record_iterator->get_current_record(), cur) > 0)) {
+            min_record_iterator = iterators[i];
         }
     }
+
     return min_record_iterator;
+}
+
+int filesize(FILE* file) {
+    int prev_location = ftell(file);
+    fseek(file, 0, SEEK_END);
+    int file_size = ftell(file);
+    fseek(file, prev_location, SEEK_SET);
+    return file_size;
+}
+
+int number_of_records(FILE* record_file, size_t record_size) {
+    return filesize(record_file) / record_size;
 }
 
 void merge_runs(RunIterator *iterators[], int num_runs, FILE *out_fp,
     long start_pos, char *buf, long buf_size) {
 
     fseek(out_fp, start_pos, SEEK_SET);
+    
     // Assume proper input i.e. all records are the same size.
     int record_size = iterators[0]->get_record_size();
     int max_number_of_records_in_buffer = floor(buf_size/record_size);
@@ -262,7 +268,7 @@ void merge_runs(RunIterator *iterators[], int num_runs, FILE *out_fp,
     RunIterator* min_record_iterator;
     int records_in_buffer;
     char* buffer_pos;
-    while(iterators_have_records(iterators, num_runs)) {
+    while (iterators_have_records(iterators, num_runs)) {
         records_in_buffer = 0;
         buffer_pos = buf;
         for (int i = 0; i < max_number_of_records_in_buffer; i++) {
@@ -270,6 +276,7 @@ void merge_runs(RunIterator *iterators[], int num_runs, FILE *out_fp,
             if (min_record_iterator == NULL) {
                 break;
             }
+            
             strncpy(buffer_pos, min_record_iterator->get_current_record()->data, record_size);
             records_in_buffer++;
             buffer_pos += record_size;

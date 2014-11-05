@@ -101,6 +101,8 @@ private:
     Record *current_record;
 };
 
+int number_of_records(FILE* record_file, size_t record_size);
+
 /**
 * Merge runs given by the `iterators`.
 * The number of `iterators` should be equal to the `num_runs`.

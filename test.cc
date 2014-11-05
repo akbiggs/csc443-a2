@@ -221,7 +221,7 @@ TEST(MakeRun) {
     RunIterator* ri3 = new RunIterator(fp, start3, run_length,
             schema->record_size * 3, schema);
 
-    RunIterator *iterators[3] = {ri1, ri2, ri3};
+    RunIterator* iterators[3] = {ri1, ri2, ri3};
 
     long start_pos = 0;
     char buf[300];
@@ -254,6 +254,26 @@ TEST(MakeRun) {
     fclose(result_fp);
     fclose(expected_fp);
     free(schema);
+}
+
+TEST(NumRecords) {
+    FILE* fp = fopen("test_files/5_records.csv", "r");
+    FILE* fp2 = fopen("test_files/test_data.csv", "r");
+    Schema* schema = (Schema*) malloc(sizeof(Schema));
+    test_open_schema("test_files/schema_example.json", schema);
+    
+    int fp_loc = ftell(fp);
+    int fp2_loc = ftell(fp2);
+    
+    CHECK(number_of_records(fp, schema->record_size) == 5);
+    CHECK(number_of_records(fp2, schema->record_size) == 1000);
+
+    CHECK(ftell(fp) == fp_loc);
+    CHECK(ftell(fp2) == fp2_loc);
+    
+    free(schema);
+    fclose(fp);
+    fclose(fp2);
 }
 
 int main() {
