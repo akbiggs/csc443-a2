@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <math.h>
+#include <sys/timeb.h>
 
 #include "library.h"
 #include "json/json.h"
@@ -45,6 +46,11 @@ int main(int argc, const char* argv[]) {
         return 3;
     }
 
+    //Record Start Time
+    struct timeb t;
+    ftime(&t);
+    long start_ms = t.time * 1000 + t.millitm;
+    
     const char* input_file = argv[2];
     const char* output_file = argv[3];
     
@@ -91,6 +97,14 @@ int main(int argc, const char* argv[]) {
         flip = !flip;
         run_length *= k;
     }
+    
+    //Calculate program runtime.
+    ftime(&t);
+    long end_ms = t.time * 1000 + t.millitm;
+    
+    //Print metrics.
+    std::cout << "TOTAL NUMBER OF RECORDS : " << 0 << std::endl;
+    std::cout << "TIME: " << (end_ms - start_ms) << std::endl;
     
     // end
     remove("tmp_file");
