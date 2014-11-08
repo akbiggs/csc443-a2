@@ -66,12 +66,10 @@ int main(int argc, const char* argv[]) {
     buffer[schema.record_size] = 0;
     
     fgets(buffer, schema.record_size+2, input_file);
-    std::cout << "Schema Record Size: " << schema.record_size << std::endl;
     int counter = 0;
     
     leveldb::WriteOptions write_opts;
     while(!feof(input_file)){
-        std::cout << counter << ": " << buffer << std::endl;
         
         sort_buffer[0] = 0;
         for(int i = 0; i < schema.n_sort_attrs; i++){
@@ -83,7 +81,6 @@ int main(int argc, const char* argv[]) {
             }
             
             strncat(sort_buffer, buffer + sort_offset, schema.attrs[schema.sort_attrs[i]]->length);
-            std::cout << sort_buffer << std::endl;
         }
         
         leveldb::Slice key = sort_buffer;
@@ -97,14 +94,13 @@ int main(int argc, const char* argv[]) {
     fclose(input_file);
     
     //Read records from B+ tree and write to sorted file.
-    std::cout << "Iterating B+ tree" << std::endl;
     leveldb::Iterator* it = db->NewIterator(leveldb::ReadOptions());
     counter = 0;
     for (it->SeekToFirst(); it->Valid(); it->Next()) {
         leveldb::Slice key = it->key();
         leveldb::Slice value = it->value();
         
-        std::cout << counter << ":" << key.ToString() << " - " << value.ToString() << std::endl;
+        //std::cout << counter << ":" << key.ToString() << " - " << value.ToString() << std::endl;
         out_index << value.ToString() << std::endl;
         counter++;
     }
