@@ -30,15 +30,16 @@ done
 
 echo "Sorting with msort"
 echo ""
-echo "Sorting with fixed mem_capacity and k"
+echo "Sorting with fixed mem_capacity(1000) and k(4)"
 echo -e "Records\tTime"
 for i in ${csvsizes[@]}
 do
     csv_file="test_files/test_data_$i.csv"
     out_file="test_files/test_data_$i.out"
+    time_total=0
     for (( a=0; a<$averages; a++))
     do
-        time=$(./msort test_files/schema_example.json $csv_file $out_file 1000 2 cgpa | tail -n 1)
+        time=$(./msort test_files/schema_example.json $csv_file $out_file 1000 4 cgpa | tail -n 1)
         time=${time:6}
         ((time_total+=time))
     done
@@ -49,7 +50,7 @@ done
 rm -rf test_files/test_data_*.out
 
 echo ""
-echo "Sorting with fixed k"
+echo "Sorting with fixed mem_capactiy 1000"
 echo -e "Records\tK\tTime"
 for i in ${csvsizes[@]}
 do
@@ -58,7 +59,7 @@ do
     for k in ${ksizes[@]}
     do
         out_file="test_files/test_data_$i_k$k.out"
-        
+        time_total=0
         for (( a=0; a<$averages; a++))
         do
             time=$(./msort test_files/schema_example.json $csv_file $out_file 1000 $k cgpa | tail -n 1)
@@ -74,7 +75,7 @@ done
 rm -rf test_files/test_data_*.out
 
 echo ""
-echo "Sorting with fixed mem_capacity"
+echo "Sorting with fixed k 4"
 echo -e "Records\tMem\tTime"
 for i in ${csvsizes[@]}
 do
@@ -83,10 +84,10 @@ do
     for m in ${memsizes[@]}
     do
         out_file="test_files/test_data_$i_m$m.out"
-        
+        time_total=0
         for (( a=0; a<$averages; a++))
         do
-            time=$(./msort test_files/schema_example.json $csv_file $out_file $m 2 cgpa | tail -n 1)
+            time=$(./msort test_files/schema_example.json $csv_file $out_file $m 4 cgpa | tail -n 1)
             time=${time:6}
             ((time_total+=time))
         done
@@ -105,6 +106,7 @@ for i in ${csvsizes[@]}
 do
     csv_file="test_files/test_data_$i.csv"
     out_file="test_files/test_data_bsort_$i.out"
+    time_total=0
     for (( a=0; a<$averages; a++))
     do
         time=$(./bsort test_files/schema_example.json $csv_file $out_file cgpa | tail -n 1)
