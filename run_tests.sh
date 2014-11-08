@@ -12,9 +12,11 @@ echo ""
 #Fix the parameter k and the file size. Plot the performance (in ms) versus different choices of memory capacity.
 ##Measure the performance trend of msort with respect to different choices of k.
 #Fix the file size and the memory capacity. Plot the performance (in ms) versus different choices of k. Of course, k must be greater than 1.
-csvsizes=(100 1000)
-ksizes=(2 4 8 16)
+csvsizes=(100 1000 10000 100000 1000000 10000000)
+ksizes=(2 4 8 16 32)
 memsizes=(1000 10000 100000)
+
+averages=10
 
 echo "Generating test files."
 for i in ${csvsizes[@]}
@@ -34,9 +36,13 @@ for i in ${csvsizes[@]}
 do
     csv_file="test_files/test_data_$i.csv"
     out_file="test_files/test_data_$i.out"
-    
-    time=$(./msort test_files/schema_example.json $csv_file $out_file 1000 2 cgpa | tail -n 1)
-    time=${time:6}
+    for (( a=0; a<$averages; a++))
+    do
+        time=$(./msort test_files/schema_example.json $csv_file $out_file 1000 2 cgpa | tail -n 1)
+        time=${time:6}
+        ((time_total+=time))
+    done
+    time=$(echo "scale=2; $time_total/$averages" | bc)
     echo -e "$i\t$time"
 
 done
@@ -53,8 +59,13 @@ do
     do
         out_file="test_files/test_data_$i_k$k.out"
         
-        time=$(./msort test_files/schema_example.json $csv_file $out_file 1000 $k cgpa | tail -n 1)
-        time=${time:6}
+        for (( a=0; a<$averages; a++))
+        do
+            time=$(./msort test_files/schema_example.json $csv_file $out_file 1000 $k cgpa | tail -n 1)
+            time=${time:6}
+            ((time_total+=time))
+        done
+        time=$(echo "scale=2; $time_total/$averages" | bc)
         echo -e "$i\t$k\t$time"
 
     done
@@ -73,9 +84,13 @@ do
     do
         out_file="test_files/test_data_$i_m$m.out"
         
-
-        time=$(./msort test_files/schema_example.json $csv_file $out_file $m 2 cgpa | tail -n 1)
-        time=${time:6}
+        for (( a=0; a<$averages; a++))
+        do
+            time=$(./msort test_files/schema_example.json $csv_file $out_file $m 2 cgpa | tail -n 1)
+            time=${time:6}
+            ((time_total+=time))
+        done
+        time=$(echo "scale=2; $time_total/$averages" | bc)
         echo -e "$i\t$m\t$time"
     done
     
@@ -90,9 +105,13 @@ for i in ${csvsizes[@]}
 do
     csv_file="test_files/test_data_$i.csv"
     out_file="test_files/test_data_bsort_$i.out"
-    
-    time=$(./bsort test_files/schema_example.json $csv_file $out_file cgpa | tail -n 1)
-    time=${time:6}
+    for (( a=0; a<$averages; a++))
+    do
+        time=$(./bsort test_files/schema_example.json $csv_file $out_file cgpa | tail -n 1)
+        time=${time:6}
+        ((time_total+=time))
+    done
+    time=$(echo "scale=2; $time_total/$averages" | bc)
     echo -e "$i\t$time"
 done
 
