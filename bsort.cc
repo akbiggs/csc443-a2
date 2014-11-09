@@ -62,9 +62,8 @@ int main(int argc, const char* argv[]) {
     
     //Read records and insert into B+ tree.
     char buffer[schema.record_size+3];
-    char sort_buffer[schema.record_size+1];
-    buffer[schema.record_size] = 0;
-    
+    char sort_buffer[schema.record_size+51];
+
     fgets(buffer, schema.record_size+2, input_file);
     int counter = 0;
     
@@ -83,11 +82,17 @@ int main(int argc, const char* argv[]) {
             strncat(sort_buffer, buffer + sort_offset, schema.attrs[schema.sort_attrs[i]]->length);
         }
         
+        //Append record # to allow duplicates.
+        char counter_str[50];
+        sprintf(counter_str, "%d", counter);
+        strcat(sort_buffer, counter_str);
+        
         leveldb::Slice key = sort_buffer;
         buffer[schema.record_size-1] = 0;
         leveldb::Slice value = buffer;
         db->Put(write_opts, key, value);
         
+        //std::cout << buffer << std::endl;
         fgets(buffer, schema.record_size+2, input_file);
         counter++;
     }
@@ -100,7 +105,7 @@ int main(int argc, const char* argv[]) {
         leveldb::Slice key = it->key();
         leveldb::Slice value = it->value();
         
-        //std::cout << counter << ":" << key.ToString() << " - " << value.ToString() << std::endl;
+        //std::cout << "Line: " << counter << " Key:" << key.ToString() << " - " << value.ToString() << std::endl;
         out_index << value.ToString() << std::endl;
         counter++;
     }
@@ -116,8 +121,6 @@ int main(int argc, const char* argv[]) {
     out_index.close();
     delete it;
     delete db;
-    
-    
     
     return 0;
 }

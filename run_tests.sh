@@ -12,7 +12,7 @@ echo ""
 #Fix the parameter k and the file size. Plot the performance (in ms) versus different choices of memory capacity.
 ##Measure the performance trend of msort with respect to different choices of k.
 #Fix the file size and the memory capacity. Plot the performance (in ms) versus different choices of k. Of course, k must be greater than 1.
-csvsizes=(100 1000 10000 100000 1000000 10000000)
+csvsizes=(100 1000 10000 100000)
 ksizes=(2 4 8 16 32)
 memsizes=(1000 10000 100000)
 
@@ -112,6 +112,7 @@ do
         time=$(./bsort test_files/schema_example.json $csv_file $out_file cgpa | tail -n 1)
         time=${time:6}
         ((time_total+=time))
+        rm -rf leveldb_dir
     done
     time=$(echo "scale=2; $time_total/$averages" | bc)
     echo -e "$i\t$time"
