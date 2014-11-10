@@ -158,6 +158,8 @@ RunIterator::RunIterator(FILE* fp, long start_pos, long run_length, long buf_siz
 
     this->buffer = (char*) malloc(this->buf_size);
     this->buffer_pointer = this->buffer;
+    
+    this->id = next_id++;
 }
 
 RunIterator::~RunIterator() {
@@ -184,7 +186,9 @@ void RunIterator::read_into_buffer() {
         this->records_left = records_read;
         this->left_in_buf = records_read;
     }
+    
     this->file_pos += (this->schema->record_size * records_read);
+    
     this->buffer_pointer = this->buffer;
 }
 
@@ -214,7 +218,7 @@ bool RunIterator::has_next() {
     if (this->left_in_buf == 0) {
         this->read_into_buffer();
     }
-    bool potentially_has_next_record = (this->left_in_buf == 0) || (this->buffer != '\0');
+    bool potentially_has_next_record = (this->left_in_buf > 0 || *(this->buffer) != '\0');
     return (this->records_left > 0 && potentially_has_next_record);
 }
 
@@ -229,6 +233,7 @@ bool iterators_have_records(RunIterator *iterators[], int num_runs) {
             return true;
         }
     }
+
     return false;
 }
 
@@ -268,6 +273,7 @@ void merge_runs(RunIterator *iterators[], int num_runs, FILE *out_fp,
     RunIterator* min_record_iterator;
     int records_in_buffer;
     char* buffer_pos;
+    int records_written = 0;
     while (iterators_have_records(iterators, num_runs)) {
         records_in_buffer = 0;
         buffer_pos = buf;
@@ -282,6 +288,8 @@ void merge_runs(RunIterator *iterators[], int num_runs, FILE *out_fp,
             buffer_pos += record_size;
             min_record_iterator->next();
         }
+        
+        records_written += records_in_buffer;
 
         fwrite(buf, record_size, records_in_buffer, out_fp);
         fflush(out_fp);

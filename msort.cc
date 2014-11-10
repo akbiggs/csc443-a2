@@ -41,7 +41,7 @@ int main(int argc, const char* argv[]) {
 
     unsigned long memory_capacity = atoi(argv[4]);
     if (schema->record_size > memory_capacity) {
-        cout << "Not enough memeory to read in a record." << endl;
+        cout << "Not enough memory to read in a record." << endl;
         free(schema);
         return 3;
     }
@@ -70,8 +70,8 @@ int main(int argc, const char* argv[]) {
    
     bool flip = false;
     while (run_length < num_records) {
-        
-        int num_runs = min(k, (int)ceil((float)num_records / run_length));
+
+        int num_runs = ceil((float)num_records / run_length);
 
         // ugly logic to avoid reading and writing to and from the same file
         const char* read_filename = flip ? "tmp_file2" : "tmp_file";
@@ -109,6 +109,7 @@ int main(int argc, const char* argv[]) {
     // end
     remove("tmp_file");
     remove("tmp_file2");
+    
     free(schema);
     fclose(in_fp);
     return 0;

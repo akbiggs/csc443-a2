@@ -51,6 +51,7 @@ typedef struct {
 */
 void mk_runs(FILE *in_fp, FILE *out_fp, long run_length, Schema *schema);
 
+static int next_id = 0;
 /**
 * The iterator helps you scan through a run.
 * you can add additional members as your wish
@@ -95,6 +96,7 @@ private:
     long end_file_pos;
     long run_length;
     long records_left;
+    int id;
 
     void read_into_buffer();
     Schema *schema;
