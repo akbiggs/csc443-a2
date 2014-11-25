@@ -83,7 +83,6 @@ int record_object_comparator(Record* r1, Record* r2){
 int record_comparator(const void* a, const void* b){
     Record* r1 = *((Record **)a);
     Record* r2 = *((Record **)b);
-
     return record_object_comparator(r1, r2);
 }
 
